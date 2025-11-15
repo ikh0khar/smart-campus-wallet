@@ -1,0 +1,21 @@
+event_id,name,category,location,start_time,tags,cost
+E001,Tech and Innovation Mixer,Tech,Business School Atrium,2025-11-05 17:00,tech,networking,0
+E002,Career Networking Night,Career,Campus Center,2025-11-06 18:00,career,networking,0
+E003,Financial Wellness Workshop,Finance,Innovation Hub,2025-11-07 16:00,finance,wellness,0
+E004,HackFest Info Session,Tech,Innovation Hub,2025-11-01 15:00,hackathon,ai,0
+E005,Study Skills Bootcamp,Academic,Library,2025-11-08 11:00,academic,success,0
+E006,Esports Tournament,Sports,Rec Center,2025-11-09 19:00,gaming,competition,5
+E007,Yoga and Mindfulness,Wellness,Rec Center,2025-11-03 08:00,wellness,health,0
+E008,Cultural Night,Cultural,Campus Center,2025-11-09 18:00,culture,community,0
+E009,Women in Tech Panel,Tech,Business School Atrium,2025-11-04 17:30,tech,diversity,0
+E010,Entrepreneurship 101,Career,Innovation Hub,2025-11-02 14:00,startups,business,0
+E011,Resume and LinkedIn Clinic,Career,Campus Center,2025-11-05 13:00,career,workshops,0
+E012,Music on the Green,Social,Quad,2025-11-06 19:00,music,social,0
+E013,Campus Cleanup Day,Community,Quad,2025-11-02 10:00,community,volunteering,0
+E014,Intro to Personal Finance,Finance,Innovation Hub,2025-11-03 16:00,finance,students,0
+E015,Data Science Club Meetup,Tech,Innovation Hub,2025-11-07 18:00,data,ai,0
+E016,Movie Night,Social,Student Union,2025-11-08 20:00,film,social,0
+E017,Leadership Workshop,Academic,Business School Atrium,2025-11-01 12:00,leadership,skills,0
+E018,Healthy Eating on a Budget,Wellness,Campus Center,2025-11-04 12:30,wellness,finance,0
+E019,Campus Job Fair,Career,Campus Center,2025-11-09 13:00,career,employment,0
+E020,Library Late Night Study,Academic,Library,2025-11-10 21:00,study,academic,0
