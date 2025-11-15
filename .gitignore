@@ -1,19 +1,28 @@
 # Dependencies
 node_modules/
 package-lock.json
+<<<<<<< HEAD
 yarn.lock
 
 # Environment variables
 .env
 .env.local
 .env.production
+=======
+
+# Environment variables
+.env
+>>>>>>> origin/backend-v2
 
 # Logs
 logs
 *.log
 npm-debug.log*
+<<<<<<< HEAD
 yarn-debug.log*
 yarn-error.log*
+=======
+>>>>>>> origin/backend-v2
 
 # OS files
 .DS_Store
@@ -24,6 +33,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+<<<<<<< HEAD
 *~
 
 # Build outputs
@@ -37,4 +47,6 @@ data/*.json
 data/*.jsonl
 data/*.txt
 !data/README.md
+=======
+>>>>>>> origin/backend-v2
 

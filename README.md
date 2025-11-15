@@ -1,18 +1,21 @@
-# smart-campus-wallet
+# Smart Campus Wallet - Backend API
 
-A smart wallet application for campus students with budget tracking, spending insights, and rewards.
+Backend API for the Smart Campus Wallet application built for HackFest 2025 @ Rutgers Newark.
 
 ## Features
 
-- 💰 Transaction Management
-- 📊 Spending Analytics & Insights
-- 🎁 Rewards and Incentives (Coming Soon)
-- 💳 Transaction History Tracking
-- 📱 Budget Management (Coming Soon)
+### Feature 1: Spending Dashboard + Budgeting (Current)
+- **Transactions API** - View and filter transactions
+- **Spending Summary** - Get totals, averages, and period-based summaries
+- **Category Breakdown** - Get spending by category (perfect for bar charts)
+- **Spending Trends** - Get time-based spending data (daily/weekly/monthly)
+- **Budget Management** - Create, view, and track budgets
+- **Budget Progress** - Get detailed budget progress with chart-friendly data
+- **Budget Alerts** - Get budgets that need attention
 
 ## Tech Stack
 
-- **Backend**: Node.js
+- **Backend**: Node.js with Express
 - **Database**: MongoDB with Mongoose ODM
 - **Environment**: dotenv
 
@@ -23,13 +26,12 @@ A smart wallet application for campus students with budget tracking, spending in
 
 ## Quick Start
 
-### 1. Install Dependencies
-
+### Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Set Up MongoDB
+### Set Up MongoDB
 
 **Option A: Local MongoDB (macOS)**
 ```bash
@@ -46,7 +48,7 @@ npm install
 3. Get your connection string
 4. Update `.env` file with your connection string
 
-### 3. Configure Environment
+### Configure Environment
 
 Create a `.env` file in the root directory:
 
@@ -61,18 +63,27 @@ For MongoDB Atlas:
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/smart-campus-wallet
 ```
 
-### 4. Test Connection
-
+### Test MongoDB Connection
 ```bash
 node scripts/test-connection.js
 ```
 
-### 5. Import Data
-
+### Import Data
 ```bash
 # Import the transaction dataset
 node scripts/import-csv.js data/wallet_transactions_sample.csv --clear
 ```
+
+### Run the Server
+```bash
+# Development mode (with auto-reload)
+npm run dev
+
+# Production mode
+npm start
+```
+
+The server will start on `http://localhost:5000`
 
 ## Database Integration
 
@@ -145,28 +156,58 @@ async function example() {
 }
 ```
 
-## Project Structure
+## API Endpoints
 
+### Health Check
 ```
-smart-campus-wallet/
-├── config/
-│   └── database.js          # MongoDB connection configuration
-├── models/
-│   ├── User.js              # User model
-│   ├── Transaction.js       # Transaction model
-│   └── index.js             # Model exports
-├── scripts/
-│   ├── import-csv.js        # CSV data importer
-│   ├── test-connection.js   # Database connection tester
-│   ├── install-mongodb.sh   # MongoDB installation script
-│   └── manual-install-guide.md
-├── data/
-│   └── wallet_transactions_sample.csv  # Sample dataset
-├── .env                     # Environment variables (create this)
-├── .gitignore              # Git ignore file
-├── package.json            # Dependencies
-└── README.md               # This file
+GET /api/health
 ```
+
+### Transactions
+```
+GET /api/transactions
+GET /api/transactions/summary?startDate=2025-11-01&endDate=2025-11-30
+GET /api/transactions/categories?startDate=2025-11-01&endDate=2025-11-30
+GET /api/transactions/trends?period=daily&startDate=2025-11-01&endDate=2025-11-30
+```
+
+### Budgets
+```
+GET /api/budgets
+GET /api/budgets/:id
+GET /api/budgets/:id/progress
+GET /api/budgets/alerts?threshold=80
+POST /api/budgets
+```
+
+### Activities (Feature 2: My Activity)
+```
+GET /api/activities/events
+GET /api/activities/events/:eventId
+GET /api/activities/events/user/:userId
+POST /api/activities/events/:eventId/attend
+DELETE /api/activities/events/:eventId/attend
+GET /api/activities/class-attendance/:userId
+POST /api/activities/class-attendance/:userId
+PUT /api/activities/class-attendance/:userId/total
+GET /api/activities/logs/:userId
+POST /api/activities/logs/:userId
+GET /api/activities/summary/:userId
+```
+
+**📖 See [ACTIVITY_API_DOCS.md](./ACTIVITY_API_DOCS.md) for complete My Activity API documentation**
+
+### Rewards (Feature 3: Rewards and Incentives)
+```
+GET /api/rewards/point-values
+GET /api/rewards/points/:userId
+GET /api/rewards/streaks/:userId
+POST /api/rewards/streaks/:userId/update
+GET /api/rewards/achievements/:userId
+GET /api/rewards/summary/:userId
+```
+
+**📖 See [REWARDS_API_DOCS.md](./REWARDS_API_DOCS.md) for complete Rewards API documentation**
 
 ## Importing Data
 
@@ -199,42 +240,88 @@ Expected CSV columns:
 - `location` - Transaction location
 - `date` - Transaction date (MM/DD/YY format)
 
-## Database Queries Examples
+## Response Formats
 
-### Get all transactions for a user
-```javascript
-const transactions = await Transaction.find({ userId: 'U001' });
+All endpoints return data in chart-friendly formats:
+
+### Category Breakdown Example
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "category": "food",
+      "amount": 53.00,
+      "count": 5,
+      "percentage": 15.23
+    },
+    {
+      "category": "books",
+      "amount": 165.99,
+      "count": 2,
+      "percentage": 47.70
+    }
+  ],
+  "total": 348.00
+}
 ```
 
-### Get transactions by category
-```javascript
-const diningTransactions = await Transaction.find({ category: 'Dining' });
+### Budget Progress Example
+```json
+{
+  "success": true,
+  "data": {
+    "budget": {
+      "id": 1,
+      "name": "Monthly Food Budget",
+      "category": "food",
+      "amount": 200.00,
+      "period": "monthly"
+    },
+    "progress": {
+      "spent": 53.00,
+      "remaining": 147.00,
+      "percentage": 26.50,
+      "status": "good"
+    },
+    "chartData": [
+      { "label": "Spent", "value": 53.00, "color": "#10b981" },
+      { "label": "Remaining", "value": 147.00, "color": "#e5e7eb" }
+    ]
+  }
+}
 ```
 
-### Get transactions in date range
-```javascript
-const startDate = new Date('2025-10-01');
-const endDate = new Date('2025-10-31');
-const transactions = await Transaction.find({
-  date: { $gte: startDate, $lte: endDate }
-});
+## Sample Data
+
+The backend uses MongoDB with real CSV sample data:
+- **200 transactions** from `data/wallet_transactions_sample.csv`
+- **20 users** automatically created from transaction data
+
+Data is imported using the import script. Categories are normalized:
+- `Dining` → `food`
+- `Transport` → `transportation`
+- `Supplies` → `other`
+- `Pharmacy` → `utilities`
+
+## Testing with Sample Data
+
+You can filter by `userId` to see data for specific users:
+```
+GET /api/transactions?userId=U001
+GET /api/transactions/categories?userId=U001
+GET /api/transactions/summary?userId=U001&startDate=2025-10-01&endDate=2025-10-31
 ```
 
-### Get user spending summary
-```javascript
-const totalSpent = await Transaction.aggregate([
-  { $match: { userId: 'U001' } },
-  { $group: { _id: '$category', total: { $sum: '$amount' } } }
-]);
-```
+## Frontend Integration
 
-## Environment Variables
+**📖 See [FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md) for complete integration guide**
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/smart-campus-wallet` |
-| `PORT` | Server port (optional) | `3000` |
-| `NODE_ENV` | Environment (optional) | `development` |
+Quick start:
+1. Make sure backend is running: `npm run dev`
+2. Backend URL: `http://localhost:3000/api`
+3. CORS is enabled - frontend can connect from any origin
+4. See `api-examples.js` for code examples
 
 ## Scripts
 
@@ -242,6 +329,12 @@ const totalSpent = await Transaction.aggregate([
 # Test MongoDB connection
 npm run test:connection
 node scripts/test-connection.js
+
+# Verify database integration
+npm run verify
+
+# Run query examples
+npm run examples
 
 # Import data
 npm run import data/wallet_transactions_sample.csv
@@ -254,14 +347,33 @@ brew services start mongodb-community
 brew services stop mongodb-community
 ```
 
+## Features Completed
+
+✅ **Feature 1: Spending Dashboard + Budgeting**
+- Transaction management and filtering
+- Category breakdowns (chart-ready)
+- Spending summaries and trends
+- Budget tracking and progress
+- **MongoDB database integration for persistence**
+
+✅ **Feature 2: My Activity**
+- Campus event browsing and attendance logging
+- Class attendance tracking
+- Gym/activity logging (gym, sports, walk, run)
+- Activity summaries and statistics
+
+✅ **Feature 3: Rewards and Incentives**
+- Points system for streaks and achievements
+- Streak tracking (3 days, week, month milestones)
+- Automatic rewards when logging activities
+- Points for attending events and staying under budget
+
 ## Next Steps
 
 - [x] Add database integration (MongoDB) for persistence
 - [ ] Add AI integration (budget recommendations, spending insights, predictions)
 - [ ] Add authentication
-- [ ] Add Feature 3: Rewards and Incentives
-- [ ] Build API endpoints
-- [ ] Create frontend interface
+- [ ] Migrate existing features to use MongoDB
 
 ## License
 
