@@ -26,6 +26,9 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware to ensure JSON responses for API routes
 app.use((req, res, next) => {
   if (req.path && req.path.startsWith('/api/')) {
+    // Force JSON Content-Type for all API routes
+    res.setHeader('Content-Type', 'application/json');
+    
     // Store original json method
     const originalJson = res.json.bind(res);
     
@@ -35,11 +38,12 @@ app.use((req, res, next) => {
       return originalJson(data);
     };
     
-    // Override send to ensure JSON for API routes
+    // Override send to prevent HTML responses
     const originalSend = res.send.bind(res);
     res.send = function(data) {
       if (typeof data === 'string' && data.trim().startsWith('<')) {
         // If HTML is being sent, convert to JSON error
+        console.error('ERROR: Attempted to send HTML for API route:', req.path);
         return res.status(500).json({
           success: false,
           message: 'Server error: HTML response received instead of JSON'
@@ -63,29 +67,12 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Smart Campus Wallet API is running' });
 });
 
-// 404 handler for API routes - must be before static file serving
-app.use((req, res, next) => {
-  if (req.path && req.path.startsWith('/api/')) {
-    return res.status(404).json({
-      success: false,
-      message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
-      availableEndpoints: [
-        'GET /api/health',
-        'GET /api/transactions',
-        'GET /api/budgets',
-        'GET /api/activities/events',
-        'GET /api/rewards/summary/:userId'
-      ]
-    });
-  }
-  next();
-});
-
-// Error handler middleware - must be before static file serving
+// Error handler middleware - MUST be before 404 handler and static files
 app.use((err, req, res, next) => {
   // Only handle JSON errors for API routes
   if (req.path && req.path.startsWith('/api/')) {
     console.error('API Error:', err);
+    res.setHeader('Content-Type', 'application/json');
     res.status(err.status || 500).json({
       success: false,
       message: err.message || 'Internal server error',
@@ -97,14 +84,49 @@ app.use((err, req, res, next) => {
   }
 });
 
-// Serve static files from public directory (must be last)
-app.use(express.static('public'));
+// 404 handler for API routes - must be after routes but before static files
+app.use((req, res, next) => {
+  if (req.path && req.path.startsWith('/api/')) {
+    // This only runs if no route matched
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(404).json({
+      success: false,
+      message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
+      availableEndpoints: [
+        'GET /api/health',
+        'GET /api/transactions',
+        'GET /api/budgets',
+        'POST /api/budgets/check-rewards/:userId',
+        'GET /api/activities/events',
+        'GET /api/rewards/summary/:userId'
+      ]
+    });
+  }
+  next();
+});
 
-// Catch-all for frontend routes (SPA fallback)
+// Serve static files from public directory (must be last, after API routes)
+// Only serve static files for non-API routes
+app.use((req, res, next) => {
+  if (req.path && !req.path.startsWith('/api/')) {
+    express.static('public')(req, res, next);
+  } else {
+    next();
+  }
+});
+
+// Catch-all for frontend routes (SPA fallback) - must be last
 app.get('*', (req, res) => {
   // Only serve index.html for non-API routes
-  if (!req.path.startsWith('/api/')) {
+  if (req.path && !req.path.startsWith('/api/')) {
     res.sendFile('index.html', { root: 'public' });
+  } else {
+    // If somehow we reach here for API routes, return JSON 404
+    res.setHeader('Content-Type', 'application/json');
+    res.status(404).json({
+      success: false,
+      message: `API endpoint not found: ${req.method} ${req.originalUrl}`
+    });
   }
 });
 
