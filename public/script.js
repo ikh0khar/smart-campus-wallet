@@ -513,7 +513,7 @@ function displayEvents(events, summaryData) {
                 </div>
                 <div class="event-footer">
                     ${attendingBadge}
-                    <button class="btn-attend ${isAttending ? 'btn-unattend' : 'btn-join'}" onclick="toggleAttendance('${event.eventId}', ${isAttending}); return false;">
+                    <button class="btn-attend ${isAttending ? 'btn-unattend' : 'btn-join'}" onclick="toggleAttendance('${event.eventId}', ${isAttending})" data-event-id="${event.eventId}" data-is-attending="${isAttending}">
                         ${isAttending ? 'Cancel Attendance' : 'Mark Attending'}
                     </button>
                 </div>
@@ -670,6 +670,13 @@ async function toggleAttendance(eventId, currentlyAttending) {
     try {
         const userId = defaultUserId;
         
+        // Update button state immediately for better UX
+        const button = document.querySelector(`[data-event-id="${eventId}"]`);
+        if (button) {
+            button.disabled = true;
+            button.textContent = 'Processing...';
+        }
+        
         if (currentlyAttending) {
             // Remove attendance
             const response = await fetch(`${API_BASE_URL}/activities/events/${eventId}/attend`, {
@@ -688,11 +695,38 @@ async function toggleAttendance(eventId, currentlyAttending) {
                 if (event) {
                     event.isAttending = false;
                 }
-                // Reload to update display
+                // Force immediate UI update before reload
+                const eventCards = document.querySelectorAll('.event-card');
+                eventCards.forEach(card => {
+                    const button = card.querySelector('.btn-attend');
+                    if (button && button.onclick && button.onclick.toString().includes(eventId)) {
+                        const eventName = card.querySelector('.event-name');
+                        if (eventName && eventName.textContent === event.name) {
+                            // Update button
+                            button.textContent = 'Mark Attending';
+                            button.classList.remove('btn-unattend');
+                            button.classList.add('btn-join');
+                            button.disabled = false;
+                            // Update onclick and data attributes
+                            button.setAttribute('onclick', `toggleAttendance('${eventId}', false)`);
+                            button.setAttribute('data-is-attending', 'false');
+                            // Remove attending badge
+                            const badge = card.querySelector('.attending-badge');
+                            if (badge) badge.remove();
+                            card.classList.remove('attending');
+                        }
+                    }
+                });
+                // Reload to update display and sync with server
                 await loadActivityData();
             } else {
                 updateEventsStatus(`Error: ${data.message || 'Failed to remove attendance'}`);
                 console.error('Remove attendance error:', data);
+                // Re-enable button on error
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = 'Cancel Attendance';
+                }
             }
         } else {
             // Add attendance
@@ -723,11 +757,43 @@ async function toggleAttendance(eventId, currentlyAttending) {
                 if (event) {
                     event.isAttending = true;
                 }
-                // Reload to update display
+                // Force immediate UI update before reload
+                const eventCards = document.querySelectorAll('.event-card');
+                eventCards.forEach(card => {
+                    const button = card.querySelector('.btn-attend');
+                    if (button && button.onclick && button.onclick.toString().includes(eventId)) {
+                        const eventName = card.querySelector('.event-name');
+                        if (eventName && eventName.textContent === event.name) {
+                            // Update button
+                            button.textContent = 'Cancel Attendance';
+                            button.classList.remove('btn-join');
+                            button.classList.add('btn-unattend');
+                            button.disabled = false;
+                            // Update onclick and data attributes
+                            button.setAttribute('onclick', `toggleAttendance('${eventId}', true)`);
+                            button.setAttribute('data-is-attending', 'true');
+                            // Add attending badge
+                            const eventFooter = card.querySelector('.event-footer');
+                            if (eventFooter && !eventFooter.querySelector('.attending-badge')) {
+                                const badge = document.createElement('span');
+                                badge.className = 'attending-badge';
+                                badge.textContent = '✓ Attending';
+                                eventFooter.insertBefore(badge, button);
+                            }
+                            card.classList.add('attending');
+                        }
+                    }
+                });
+                // Reload to update display and sync with server
                 await loadActivityData();
             } else {
                 updateEventsStatus(`Error: ${data.message || 'Failed to log attendance'}`);
                 console.error('Log attendance error:', data);
+                // Re-enable button on error
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = 'Mark Attending';
+                }
             }
         }
     } catch (error) {

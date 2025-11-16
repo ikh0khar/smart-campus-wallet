@@ -327,11 +327,13 @@ router.delete('/events/:eventId/attend', async (req, res) => {
       });
     }
 
-    // Remove attendance from MongoDB
+    // Remove attendance from JSON DB
     await EventAttendance.deleteOne({ userId, eventId });
 
-    // Get remaining attended events
-    const attendedEventIds = await EventAttendance.find({ userId }).distinct('eventId');
+    // Get remaining attended events (using lean() and Set for distinct)
+    const attendanceResult = await EventAttendance.find({ userId });
+    const attendances = await attendanceResult.lean();
+    const attendedEventIds = [...new Set(attendances.map(a => a.eventId).filter(id => id))];
 
     res.json({
       success: true,
