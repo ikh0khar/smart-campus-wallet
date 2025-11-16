@@ -1,18 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { getEvents, getUsers } = require('../data/loadSampleData');
-const {
-  getUserAttendedEvents,
-  logEventAttendance,
-  removeEventAttendance,
-  getClassAttendance,
-  logClassAttendance,
-  setTotalClassDays,
-  getActivityLogs,
-  logActivity,
-  getActivitySummary,
-} = require('../data/activityData');
-const { updateStreak, awardEventPoints } = require('../data/rewardsData');
+const { Event, EventAttendance, ClassAttendance, ActivityLog } = require('../models');
+const { updateStreak, awardEventPoints, awardActivityPoints } = require('../utils/rewardsMongo');
 
 // ============================================
 // EVENTS ENDPOINTS
@@ -21,15 +10,18 @@ const { updateStreak, awardEventPoints } = require('../data/rewardsData');
 // @route   GET /api/activities/events
 // @desc    Get all campus events
 // @access  Public
-router.get('/events', (req, res) => {
+router.get('/events', async (req, res) => {
   try {
     const { category, isFree, userId } = req.query;
-    let events = getEvents();
-
-    // Filter by category
+    
+    // Build MongoDB query
+    const query = {};
     if (category) {
-      events = events.filter(e => e.category.toLowerCase() === category.toLowerCase());
+      query.category = new RegExp(`^${category}$`, 'i');
     }
+
+    // Get events from MongoDB
+    let events = await Event.find(query).lean();
 
     // Filter by free/paid
     if (isFree !== undefined) {
@@ -39,9 +31,10 @@ router.get('/events', (req, res) => {
 
     // Add attendance status if userId provided
     if (userId) {
-      const attendedEvents = getUserAttendedEvents(userId);
+      const attendedEvents = await EventAttendance.find({ userId }).distinct('eventId');
       events = events.map(event => ({
         ...event,
+        eventId: event.eventId, // Keep original eventId
         isAttending: attendedEvents.includes(event.eventId),
         isFree: event.cost === 0 || event.cost === '0',
       }));
@@ -69,12 +62,12 @@ router.get('/events', (req, res) => {
 // @route   GET /api/activities/events/:eventId
 // @desc    Get single event details
 // @access  Public
-router.get('/events/:eventId', (req, res) => {
+router.get('/events/:eventId', async (req, res) => {
   try {
     const { eventId } = req.params;
     const { userId } = req.query;
-    const events = getEvents();
-    const event = events.find(e => e.eventId === eventId);
+    
+    const event = await Event.findOne({ eventId }).lean();
 
     if (!event) {
       return res.status(404).json({
@@ -90,8 +83,8 @@ router.get('/events/:eventId', (req, res) => {
 
     // Add attendance status if userId provided
     if (userId) {
-      const attendedEvents = getUserAttendedEvents(userId);
-      eventData.isAttending = attendedEvents.includes(eventId);
+      const attendance = await EventAttendance.findOne({ userId, eventId });
+      eventData.isAttending = !!attendance;
     }
 
     res.json({
@@ -110,25 +103,26 @@ router.get('/events/:eventId', (req, res) => {
 // @route   GET /api/activities/events/user/:userId
 // @desc    Get events user is attending
 // @access  Public
-router.get('/events/user/:userId', (req, res) => {
+router.get('/events/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const attendedEventIds = getUserAttendedEvents(userId);
-    const allEvents = getEvents();
+    
+    // Get attended event IDs from MongoDB
+    const attendedEventIds = await EventAttendance.find({ userId }).distinct('eventId');
+    
+    // Get event details
+    const attendedEvents = await Event.find({ eventId: { $in: attendedEventIds } }).lean();
 
-    const attendedEvents = attendedEventIds
-      .map(eventId => allEvents.find(e => e.eventId === eventId))
-      .filter(e => e !== undefined)
-      .map(event => ({
-        ...event,
-        isFree: event.cost === 0 || event.cost === '0',
-        isAttending: true,
-      }));
+    const formattedEvents = attendedEvents.map(event => ({
+      ...event,
+      isFree: event.cost === 0 || event.cost === '0',
+      isAttending: true,
+    }));
 
     res.json({
       success: true,
-      count: attendedEvents.length,
-      data: attendedEvents,
+      count: formattedEvents.length,
+      data: formattedEvents,
     });
   } catch (error) {
     console.error('Get user events error:', error);
@@ -142,7 +136,7 @@ router.get('/events/user/:userId', (req, res) => {
 // @route   POST /api/activities/events/:eventId/attend
 // @desc    Log event attendance
 // @access  Public
-router.post('/events/:eventId/attend', (req, res) => {
+router.post('/events/:eventId/attend', async (req, res) => {
   try {
     const { eventId } = req.params;
     const { userId } = req.body;
@@ -155,8 +149,7 @@ router.post('/events/:eventId/attend', (req, res) => {
     }
 
     // Verify event exists
-    const events = getEvents();
-    const event = events.find(e => e.eventId === eventId);
+    const event = await Event.findOne({ eventId });
     if (!event) {
       return res.status(404).json({
         success: false,
@@ -164,13 +157,31 @@ router.post('/events/:eventId/attend', (req, res) => {
       });
     }
 
-    const attendedEvents = logEventAttendance(userId, eventId);
+    // Create or check attendance
+    let attendance;
+    try {
+      attendance = await EventAttendance.findOneAndUpdate(
+        { userId, eventId },
+        { userId, eventId, attendedAt: new Date() },
+        { upsert: true, new: true }
+      );
+    } catch (error) {
+      if (error.code === 11000) {
+        // Already attending
+        attendance = await EventAttendance.findOne({ userId, eventId });
+      } else {
+        throw error;
+      }
+    }
+
+    // Get all attended events
+    const attendedEventIds = await EventAttendance.find({ userId }).distinct('eventId');
 
     // Update event streak and award points
-    const streakResult = updateStreak(userId, 'events', new Date().toISOString().split('T')[0]);
+    const streakResult = await updateStreak(userId, 'events', new Date().toISOString().split('T')[0]);
     let eventPoints = null;
     if (event) {
-      eventPoints = awardEventPoints(userId, event);
+      eventPoints = await awardEventPoints(userId, event.toObject());
     }
 
     res.json({
@@ -179,7 +190,7 @@ router.post('/events/:eventId/attend', (req, res) => {
       data: {
         eventId,
         userId,
-        attendedEvents,
+        attendedEvents: attendedEventIds,
         rewards: {
           streakUpdated: streakResult.milestone,
           streakLength: streakResult.streakLength,
@@ -200,7 +211,7 @@ router.post('/events/:eventId/attend', (req, res) => {
 // @route   DELETE /api/activities/events/:eventId/attend
 // @desc    Remove event attendance
 // @access  Public
-router.delete('/events/:eventId/attend', (req, res) => {
+router.delete('/events/:eventId/attend', async (req, res) => {
   try {
     const { eventId } = req.params;
     const { userId } = req.body;
@@ -212,7 +223,11 @@ router.delete('/events/:eventId/attend', (req, res) => {
       });
     }
 
-    const attendedEvents = removeEventAttendance(userId, eventId);
+    // Remove attendance from MongoDB
+    await EventAttendance.deleteOne({ userId, eventId });
+
+    // Get remaining attended events
+    const attendedEventIds = await EventAttendance.find({ userId }).distinct('eventId');
 
     res.json({
       success: true,
@@ -220,7 +235,7 @@ router.delete('/events/:eventId/attend', (req, res) => {
       data: {
         eventId,
         userId,
-        attendedEvents,
+        attendedEvents: attendedEventIds,
       },
     });
   } catch (error) {
@@ -239,10 +254,16 @@ router.delete('/events/:eventId/attend', (req, res) => {
 // @route   GET /api/activities/class-attendance/:userId
 // @desc    Get class attendance stats
 // @access  Public
-router.get('/class-attendance/:userId', (req, res) => {
+router.get('/class-attendance/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const attendance = getClassAttendance(userId);
+    
+    // Get or create class attendance
+    let attendance = await ClassAttendance.findOne({ userId });
+    if (!attendance) {
+      attendance = new ClassAttendance({ userId });
+      await attendance.save();
+    }
 
     // Calculate attendance percentage
     const percentage = attendance.totalDays > 0
@@ -252,7 +273,10 @@ router.get('/class-attendance/:userId', (req, res) => {
     res.json({
       success: true,
       data: {
-        ...attendance,
+        userId: attendance.userId,
+        totalDays: attendance.totalDays,
+        attendedDays: attendance.attendedDays,
+        dates: attendance.dates,
         percentage: parseFloat(percentage.toFixed(2)),
         // Chart-friendly format
         chartData: [
@@ -273,24 +297,41 @@ router.get('/class-attendance/:userId', (req, res) => {
 // @route   POST /api/activities/class-attendance/:userId
 // @desc    Log class attendance for a day
 // @access  Public
-router.post('/class-attendance/:userId', (req, res) => {
+router.post('/class-attendance/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const { date } = req.body;
+    
+    const dateStr = date || new Date().toISOString().split('T')[0];
 
-    const attendance = logClassAttendance(userId, date);
+    // Get or create class attendance
+    let attendance = await ClassAttendance.findOne({ userId });
+    if (!attendance) {
+      attendance = new ClassAttendance({ userId });
+    }
+
+    // Add date if not already present
+    if (!attendance.dates.includes(dateStr)) {
+      attendance.dates.push(dateStr);
+      attendance.attendedDays = attendance.dates.length;
+      await attendance.save();
+    }
+
     const percentage = attendance.totalDays > 0
       ? (attendance.attendedDays / attendance.totalDays) * 100
       : 0;
 
     // Update class attendance streak
-    const streakResult = updateStreak(userId, 'classAttendance', date);
+    const streakResult = await updateStreak(userId, 'classAttendance', dateStr);
 
     res.json({
       success: true,
       message: 'Class attendance logged',
       data: {
-        ...attendance,
+        userId: attendance.userId,
+        totalDays: attendance.totalDays,
+        attendedDays: attendance.attendedDays,
+        dates: attendance.dates,
         percentage: parseFloat(percentage.toFixed(2)),
         rewards: {
           streakUpdated: streakResult.milestone,
@@ -312,7 +353,7 @@ router.post('/class-attendance/:userId', (req, res) => {
 // @route   PUT /api/activities/class-attendance/:userId/total
 // @desc    Set total class days
 // @access  Public
-router.put('/class-attendance/:userId/total', (req, res) => {
+router.put('/class-attendance/:userId/total', async (req, res) => {
   try {
     const { userId } = req.params;
     const { totalDays } = req.body;
@@ -324,7 +365,15 @@ router.put('/class-attendance/:userId/total', (req, res) => {
       });
     }
 
-    const attendance = setTotalClassDays(userId, totalDays);
+    // Get or create class attendance
+    let attendance = await ClassAttendance.findOne({ userId });
+    if (!attendance) {
+      attendance = new ClassAttendance({ userId });
+    }
+
+    attendance.totalDays = totalDays;
+    await attendance.save();
+
     const percentage = attendance.totalDays > 0
       ? (attendance.attendedDays / attendance.totalDays) * 100
       : 0;
@@ -333,7 +382,10 @@ router.put('/class-attendance/:userId/total', (req, res) => {
       success: true,
       message: 'Total class days updated',
       data: {
-        ...attendance,
+        userId: attendance.userId,
+        totalDays: attendance.totalDays,
+        attendedDays: attendance.attendedDays,
+        dates: attendance.dates,
         percentage: parseFloat(percentage.toFixed(2)),
       },
     });
@@ -353,16 +405,52 @@ router.put('/class-attendance/:userId/total', (req, res) => {
 // @route   GET /api/activities/logs/:userId
 // @desc    Get all activity logs for user
 // @access  Public
-router.get('/logs/:userId', (req, res) => {
+router.get('/logs/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const logs = getActivityLogs(userId);
-    const summary = getActivitySummary(userId);
+    
+    // Get all activity logs from MongoDB
+    const logs = await ActivityLog.find({ userId }).lean();
+    
+    // Group by activity type
+    const groupedLogs = {
+      gym: [],
+      sports: [],
+      walk: [],
+      run: []
+    };
+    
+    logs.forEach(log => {
+      if (groupedLogs[log.activityType]) {
+        groupedLogs[log.activityType].push(log.date);
+      }
+    });
+
+    // Calculate summary
+    const summary = {
+      gym: {
+        count: groupedLogs.gym.length,
+        dates: groupedLogs.gym,
+      },
+      sports: {
+        count: groupedLogs.sports.length,
+        dates: groupedLogs.sports,
+      },
+      walk: {
+        count: groupedLogs.walk.length,
+        dates: groupedLogs.walk,
+      },
+      run: {
+        count: groupedLogs.run.length,
+        dates: groupedLogs.run,
+      },
+      total: groupedLogs.gym.length + groupedLogs.sports.length + groupedLogs.walk.length + groupedLogs.run.length,
+    };
 
     res.json({
       success: true,
       data: {
-        logs,
+        logs: groupedLogs,
         summary,
       },
     });
@@ -378,7 +466,7 @@ router.get('/logs/:userId', (req, res) => {
 // @route   POST /api/activities/logs/:userId
 // @desc    Log an activity (gym, sports, walk, run)
 // @access  Public
-router.post('/logs/:userId', (req, res) => {
+router.post('/logs/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const { activityType, date } = req.body;
@@ -390,20 +478,74 @@ router.post('/logs/:userId', (req, res) => {
       });
     }
 
-    const logs = logActivity(userId, activityType, date);
-    const summary = getActivitySummary(userId);
+    const validTypes = ['gym', 'sports', 'walk', 'run'];
+    if (!validTypes.includes(activityType)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid activity type. Must be one of: ${validTypes.join(', ')}`,
+      });
+    }
+
+    const dateStr = date || new Date().toISOString().split('T')[0];
+
+    // Create activity log in MongoDB
+    try {
+      await ActivityLog.findOneAndUpdate(
+        { userId, activityType, date: dateStr },
+        { userId, activityType, date: dateStr },
+        { upsert: true, new: true }
+      );
+    } catch (error) {
+      if (error.code !== 11000) { // Ignore duplicate key errors
+        throw error;
+      }
+    }
+
+    // Get all logs for summary
+    const allLogs = await ActivityLog.find({ userId }).lean();
+    const groupedLogs = {
+      gym: [],
+      sports: [],
+      walk: [],
+      run: []
+    };
+    
+    allLogs.forEach(log => {
+      if (groupedLogs[log.activityType]) {
+        groupedLogs[log.activityType].push(log.date);
+      }
+    });
+
+    const summary = {
+      gym: {
+        count: groupedLogs.gym.length,
+        dates: groupedLogs.gym,
+      },
+      sports: {
+        count: groupedLogs.sports.length,
+        dates: groupedLogs.sports,
+      },
+      walk: {
+        count: groupedLogs.walk.length,
+        dates: groupedLogs.walk,
+      },
+      run: {
+        count: groupedLogs.run.length,
+        dates: groupedLogs.run,
+      },
+      total: groupedLogs.gym.length + groupedLogs.sports.length + groupedLogs.walk.length + groupedLogs.run.length,
+    };
 
     // Update activity streak and award points
-    const dateStr = date || new Date().toISOString().split('T')[0];
-    const streakResult = updateStreak(userId, 'activities', dateStr);
-    const activityPoints = awardActivityPoints(userId, dateStr);
+    const streakResult = await updateStreak(userId, 'activities', dateStr);
+    const activityPoints = await awardActivityPoints(userId, dateStr);
 
     res.json({
       success: true,
       message: `${activityType} activity logged`,
       data: {
         activityType,
-        logs,
+        logs: groupedLogs,
         summary,
         rewards: {
           streakUpdated: streakResult.milestone,
@@ -415,12 +557,6 @@ router.post('/logs/:userId', (req, res) => {
     });
   } catch (error) {
     console.error('Log activity error:', error);
-    if (error.message.includes('Invalid activity type')) {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
     res.status(500).json({
       success: false,
       message: 'Server error',
@@ -431,23 +567,55 @@ router.post('/logs/:userId', (req, res) => {
 // @route   GET /api/activities/summary/:userId
 // @desc    Get complete activity summary for dashboard
 // @access  Public
-router.get('/summary/:userId', (req, res) => {
+router.get('/summary/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Get all data
-    const attendedEventIds = getUserAttendedEvents(userId);
-    const allEvents = getEvents();
-    const attendedEvents = attendedEventIds
-      .map(id => allEvents.find(e => e.eventId === id))
-      .filter(e => e !== undefined);
+    // Get all data from MongoDB
+    const attendedEventIds = await EventAttendance.find({ userId }).distinct('eventId');
+    const attendedEvents = await Event.find({ eventId: { $in: attendedEventIds } }).lean();
 
-    const classAttendance = getClassAttendance(userId);
-    const activitySummary = getActivitySummary(userId);
+    const classAttendance = await ClassAttendance.findOne({ userId });
+    const classAttendanceData = classAttendance || { totalDays: 0, attendedDays: 0, dates: [] };
+
+    // Get activity logs
+    const activityLogs = await ActivityLog.find({ userId }).lean();
+    const groupedLogs = {
+      gym: [],
+      sports: [],
+      walk: [],
+      run: []
+    };
+    
+    activityLogs.forEach(log => {
+      if (groupedLogs[log.activityType]) {
+        groupedLogs[log.activityType].push(log.date);
+      }
+    });
+
+    const activitySummary = {
+      gym: {
+        count: groupedLogs.gym.length,
+        dates: groupedLogs.gym,
+      },
+      sports: {
+        count: groupedLogs.sports.length,
+        dates: groupedLogs.sports,
+      },
+      walk: {
+        count: groupedLogs.walk.length,
+        dates: groupedLogs.walk,
+      },
+      run: {
+        count: groupedLogs.run.length,
+        dates: groupedLogs.run,
+      },
+      total: groupedLogs.gym.length + groupedLogs.sports.length + groupedLogs.walk.length + groupedLogs.run.length,
+    };
 
     // Calculate class attendance percentage
-    const classPercentage = classAttendance.totalDays > 0
-      ? (classAttendance.attendedDays / classAttendance.totalDays) * 100
+    const classPercentage = classAttendanceData.totalDays > 0
+      ? (classAttendanceData.attendedDays / classAttendanceData.totalDays) * 100
       : 0;
 
     // Chart data for activities
@@ -468,11 +636,14 @@ router.get('/summary/:userId', (req, res) => {
           paidEvents: attendedEvents.filter(e => e.cost > 0 && e.cost !== '0').length,
         },
         classAttendance: {
-          ...classAttendance,
+          userId: classAttendanceData.userId || userId,
+          totalDays: classAttendanceData.totalDays,
+          attendedDays: classAttendanceData.attendedDays,
+          dates: classAttendanceData.dates,
           percentage: parseFloat(classPercentage.toFixed(2)),
           chartData: [
-            { label: 'Attended', value: classAttendance.attendedDays, color: '#10b981' },
-            { label: 'Missed', value: classAttendance.totalDays - classAttendance.attendedDays, color: '#ef4444' },
+            { label: 'Attended', value: classAttendanceData.attendedDays, color: '#10b981' },
+            { label: 'Missed', value: classAttendanceData.totalDays - classAttendanceData.attendedDays, color: '#ef4444' },
           ],
         },
         activities: {
@@ -491,4 +662,3 @@ router.get('/summary/:userId', (req, res) => {
 });
 
 module.exports = router;
-

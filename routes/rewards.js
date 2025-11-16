@@ -12,9 +12,7 @@ const {
   getRewardsSummary,
   STREAK_POINTS,
   ACHIEVEMENT_POINTS,
-} = require('../data/rewardsData');
-const { getClassAttendance } = require('../data/activityData');
-const { getBudgets } = require('../routes/budgets');
+} = require('../utils/rewardsMongo');
 
 // ============================================
 // POINTS ENDPOINTS
@@ -23,10 +21,10 @@ const { getBudgets } = require('../routes/budgets');
 // @route   GET /api/rewards/points/:userId
 // @desc    Get user's total points
 // @access  Public
-router.get('/points/:userId', (req, res) => {
+router.get('/points/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const points = getUserPoints(userId);
+    const points = await getUserPoints(userId);
     
     res.json({
       success: true,
@@ -51,10 +49,10 @@ router.get('/points/:userId', (req, res) => {
 // @route   GET /api/rewards/streaks/:userId
 // @desc    Get user's streaks
 // @access  Public
-router.get('/streaks/:userId', (req, res) => {
+router.get('/streaks/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const streaks = getUserStreaks(userId);
+    const streaks = await getUserStreaks(userId);
     
     // Calculate next milestones
     const getNextMilestone = (current) => {
@@ -74,19 +72,19 @@ router.get('/streaks/:userId', (req, res) => {
     const formattedStreaks = {
       classAttendance: {
         current: streaks.classAttendance.current,
-        longest: streaks.classAttendance.current,
+        longest: streaks.classAttendance.longest,
         lastDate: streaks.classAttendance.lastDate,
         nextMilestone: getNextMilestone(streaks.classAttendance.current),
       },
       activities: {
         current: streaks.activities.current,
-        longest: streaks.activities.current,
+        longest: streaks.activities.longest,
         lastDate: streaks.activities.lastDate,
         nextMilestone: getNextMilestone(streaks.activities.current),
       },
       events: {
         current: streaks.events.current,
-        longest: streaks.events.current,
+        longest: streaks.events.longest,
         lastDate: streaks.events.lastDate,
         nextMilestone: getNextMilestone(streaks.events.current),
       },
@@ -108,7 +106,7 @@ router.get('/streaks/:userId', (req, res) => {
 // @route   POST /api/rewards/streaks/:userId/update
 // @desc    Update streak (called when user logs activity/attendance)
 // @access  Public
-router.post('/streaks/:userId/update', (req, res) => {
+router.post('/streaks/:userId/update', async (req, res) => {
   try {
     const { userId } = req.params;
     const { streakType, date } = req.body;
@@ -128,7 +126,7 @@ router.post('/streaks/:userId/update', (req, res) => {
       });
     }
     
-    const result = updateStreak(userId, streakType, date);
+    const result = await updateStreak(userId, streakType, date);
     
     res.json({
       success: true,
@@ -156,10 +154,10 @@ router.post('/streaks/:userId/update', (req, res) => {
 // @route   GET /api/rewards/achievements/:userId
 // @desc    Get user's achievements
 // @access  Public
-router.get('/achievements/:userId', (req, res) => {
+router.get('/achievements/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const achievements = getUserAchievements(userId);
+    const achievements = await getUserAchievements(userId);
     
     res.json({
       success: true,
@@ -185,10 +183,10 @@ router.get('/achievements/:userId', (req, res) => {
 // @route   GET /api/rewards/summary/:userId
 // @desc    Get complete rewards summary (points, streaks, achievements)
 // @access  Public
-router.get('/summary/:userId', (req, res) => {
+router.get('/summary/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const summary = getRewardsSummary(userId);
+    const summary = await getRewardsSummary(userId);
     
     // Format for charts
     const streakChartData = [
@@ -239,4 +237,3 @@ router.get('/point-values', (req, res) => {
 });
 
 module.exports = router;
-

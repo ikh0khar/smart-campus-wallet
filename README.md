@@ -371,9 +371,11 @@ brew services stop mongodb-community
 ## Next Steps
 
 - [x] Add database integration (MongoDB) for persistence
+- [x] Migrate existing features to use MongoDB (Transactions & Budgets)
+- [ ] Migrate Feature 2 (My Activity) to MongoDB
+- [ ] Migrate Feature 3 (Rewards) to MongoDB
 - [ ] Add AI integration (budget recommendations, spending insights, predictions)
 - [ ] Add authentication
-- [ ] Migrate existing features to use MongoDB
 
 ## License
 
