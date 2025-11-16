@@ -7,10 +7,13 @@ const budgetsRouter = require('./routes/budgets');
 
 const app = express();
 
-// Connect to MongoDB
+// Connect to MongoDB (non-blocking - server will start even if MongoDB fails)
+// This is important for Railway deployment where MongoDB might take time to initialize
 connectDB().catch(err => {
-  console.error('MongoDB connection error:', err);
-  process.exit(1);
+  console.error('⚠️  MongoDB connection error:', err.message);
+  console.error('⚠️  Server will continue, but database operations will fail until MongoDB is connected');
+  console.error('⚠️  Check MONGODB_URI environment variable and MongoDB service status');
+  // Don't exit - let server start and retry connection
 });
 
 // Middleware
@@ -169,9 +172,22 @@ app.get('*', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/api/health`);
-  console.log(`Frontend: http://localhost:${PORT}/`);
+
+// Start server (don't wait for MongoDB)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🌐 Frontend: http://localhost:${PORT}/`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`💾 MongoDB URI: ${process.env.MONGODB_URI ? 'Set' : 'NOT SET - using default'}`);
+  
+  // Check MongoDB connection status
+  const mongoose = require('mongoose');
+  if (mongoose.connection.readyState === 1) {
+    console.log(`✅ MongoDB: Connected`);
+  } else {
+    console.log(`⚠️  MongoDB: Not connected (state: ${mongoose.connection.readyState})`);
+    console.log(`⚠️  Server will continue, but API endpoints will fail until MongoDB connects`);
+  }
 });
 
