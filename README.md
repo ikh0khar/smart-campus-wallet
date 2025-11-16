@@ -1,535 +1,411 @@
-# Smart Campus Wallet - Backend API
+# RU Stable - Smart Campus Wallet
 
-Backend API for the Smart Campus Wallet application built for HackFest 2025 @ Rutgers Newark.
+**An all-in-one smart campus wallet built for HackFest 2025 @ Rutgers Newark**
 
-## Features
+RU Stable helps college students track their meal plans, dining dollars, spending, and campus activities all in one intuitive dashboard. Earn rewards for positive habits like attending events, staying active, and managing your budget effectively.
 
-### Feature 1: Spending Dashboard + Budgeting (Current)
-- **Transactions API** - View and filter transactions
-- **Spending Summary** - Get totals, averages, and period-based summaries
-- **Category Breakdown** - Get spending by category (perfect for bar charts)
-- **Spending Trends** - Get time-based spending data (daily/weekly/monthly)
-- **Budget Management** - Create, view, and track budgets
-- **Budget Progress** - Get detailed budget progress with chart-friendly data
-- **Budget Alerts** - Get budgets that need attention
+---
 
-## Tech Stack
+## 🚀 Quick Start - How to Run the Site
 
-- **Backend**: Node.js with Express
-- **Database**: MongoDB with Mongoose ODM
-- **Environment**: dotenv
+### Prerequisites
+- **Node.js** (v14 or higher) - [Download here](https://nodejs.org/)
+- A terminal/command prompt
 
-## Prerequisites
+### Installation & Running (3 Steps)
 
-- Node.js (v14 or higher)
-- MongoDB installed locally or MongoDB Atlas account
+1. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-## Quick Start
+2. **Import Sample Data** (Optional - adds demo transactions and events)
+   ```bash
+   # Import wallet transactions
+   node scripts/import-csv.js data/wallet_transactions_sample.csv
+   
+   # Import campus events
+   node scripts/import-events.js
+   ```
 
-### Install Dependencies
-```bash
-npm install
+3. **Start the Server**
+   ```bash
+   npm start
+   ```
+
+4. **Open in Browser**
+   ```
+   http://localhost:3000
+   ```
+
+That's it! The server runs on **port 3000** by default. You should see:
+- ✅ Homepage with 3 feature cards
+- ✅ Budgeting & Spending page with meal plan tracker
+- ✅ My Activity page with campus events
+- ✅ Rewards & Incentives page with points and leaderboard
+
+---
+
+## 📁 Project Structure Explained
+
+```
+smart-campus-wallet/
+├── server.js                 # Main server file - starts Express app
+├── package.json              # Dependencies and npm scripts
+│
+├── db/
+│   └── json-db.js           # JSON file-based database (no MongoDB needed!)
+│
+├── routes/                   # API route handlers
+│   ├── transactions.js      # Transaction endpoints
+│   ├── budgets.js           # Budget endpoints
+│   ├── activities.js        # Events, class attendance, activity logs
+│   ├── rewards.js           # Points, streaks, achievements
+│   └── mealPlans.js         # Meal swipe tracking
+│
+├── public/                   # Frontend files (served as static files)
+│   ├── index.html           # Homepage
+│   ├── budgeting.html       # Budgeting & Spending page
+│   ├── activity.html        # My Activity page
+│   ├── rewards.html         # Rewards & Incentives page
+│   ├── script.js            # Frontend JavaScript (API calls, UI updates)
+│   ├── styles.css           # All styling
+│   └── assets/              # Images and logos
+│
+├── data/                     # Sample data and database storage
+│   ├── db/
+│   │   └── database.json    # JSON database file (auto-created)
+│   ├── wallet_transactions_sample.csv
+│   └── campus_events_sample.csv
+│
+├── scripts/                  # Utility scripts
+│   ├── import-csv.js        # Import transactions from CSV
+│   └── import-events.js     # Import events from CSV
+│
+└── utils/                    # Helper functions
+    ├── csvParser.js         # CSV parsing utilities
+    └── rewardsJson.js       # Rewards calculation logic
 ```
 
-### Set Up MongoDB
+---
 
-**Option A: Local MongoDB (macOS)**
-```bash
-# Install MongoDB using Homebrew
-./scripts/install-mongodb.sh
+## 🏗️ How the Code Works
 
-# Or manually: brew tap mongodb/brew && brew install mongodb-community
-# Then start: brew services start mongodb-community
-```
+### Backend Architecture
 
-**Option B: MongoDB Atlas (Cloud)**
-1. Create account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Create a free cluster
-3. Get your connection string
-4. Update `.env` file with your connection string
+**1. Server Setup (`server.js`)**
+- Creates Express app
+- Initializes JSON database (`db/json-db.js`)
+- Sets up CORS middleware (allows frontend to connect)
+- Registers all API routes
+- Serves static files from `public/` folder
+- Starts listening on port 3000
 
-### Configure Environment
+**2. Database (`db/json-db.js`)**
+- **Custom JSON file-based database** - No MongoDB required!
+- Stores all data in `data/db/database.json`
+- Provides MongoDB-like methods: `find()`, `findOne()`, `create()`, `update()`, `delete()`
+- Collections: `transactions`, `budgets`, `events`, `mealPlans`, `rewardPoints`, `streaks`, etc.
 
-Create a `.env` file in the root directory:
+**3. Routes (`routes/*.js`)**
+- Each file handles specific API endpoints
+- Example: `routes/transactions.js` handles `/api/transactions/*`
+- Routes fetch data from JSON database and return JSON responses
 
-```env
-MONGODB_URI=mongodb://localhost:27017/smart-campus-wallet
-PORT=3000
-NODE_ENV=development
-```
+### Frontend Architecture
 
-For MongoDB Atlas:
-```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/smart-campus-wallet
-```
+**1. HTML Files (`public/*.html`)**
+- Static HTML pages
+- Each page loads `script.js` and `styles.css`
+- `index.html` = Homepage
+- `budgeting.html` = Budgeting & Spending page
+- `activity.html` = My Activity page
+- `rewards.html` = Rewards & Incentives page
 
-### Test MongoDB Connection
-```bash
-node scripts/test-connection.js
-```
+**2. JavaScript (`public/script.js`)**
+- **API Integration**: Fetches data from backend API
+- **Dynamic Content**: Updates HTML with data from API
+- **Event Handlers**: Button clicks, form submissions
+- **Chart Creation**: Uses Chart.js library for visualizations
 
-### Import Data
-```bash
-# Import the transaction dataset
-node scripts/import-csv.js data/wallet_transactions_sample.csv --clear
-```
+**3. Styling (`public/styles.css`)**
+- All CSS for the entire application
+- Responsive design
+- Dark theme with red accent color (#bd3346)
 
-### Run the Server
-```bash
-# Development mode (with auto-reload)
-npm run dev
+---
 
-# Production mode
-npm start
-```
+## ✨ Main Features
 
-The server will start on `http://localhost:5000`
+### 1. Budgeting & Spending
+- **Meal Plan Tracker**: Track meal swipes (starts at 220)
+  - Click "Use Meal Swipe" button to deduct
+  - Shows remaining, total, and used swipes
+  - Visual progress bar
+- **Spending Dashboard**:
+  - Total spent, transaction count, averages
+  - Pie chart showing spending by category
+  - Line chart showing monthly spending trends
+  - Category breakdown list
+  - Recent transactions list
 
-## Database Integration
+### 2. My Activity
+- **Campus Events**:
+  - Browse all campus events
+  - Filter by category (Academic, Social, Sports, etc.)
+  - Filter by cost (Free vs Paid)
+  - Mark events as "Attending" (earns points!)
+  - Unmark to cancel attendance (deducts points)
+- **Activity Tracking**:
+  - Log physical activities (Gym, Sports, Walk, Run)
+  - Track class attendance
+  - View activity timeline
 
-### MongoDB Connection
+### 3. Rewards & Incentives
+- **Points System**:
+  - Earn points for attending events (150 for free, 300 for paid)
+  - Earn points for physical activities
+  - Earn points for class attendance
+  - Points for maintaining streaks
+- **Rewards**:
+  - 200 points = $5 gift card (Dunkin, Starbucks, Target, CVS)
+  - 1000 points = $10 gift card
+  - 10,000 points = **Fire Tier** (50% off all rewards)
+- **Streaks**:
+  - Class Attendance streak
+  - Physical Activities streak
+  - Events Attendance streak
+  - App Usage streak
+- **Leaderboard**:
+  - Top 10 users ranked by points
+  - Shows tiers (Gold, Silver, Bronze)
+  - Top user shows "Fire Tier" badge
 
-The database connection is configured in `config/database.js`. To use it in your application:
+---
 
-```javascript
-const connectDB = require('./config/database');
-
-// Connect to MongoDB
-await connectDB();
-```
-
-### Database Models
-
-#### Transaction Model (`models/Transaction.js`)
-
-Stores all wallet transactions with the following fields:
-- `transactionId` - Unique transaction identifier
-- `userId` - User ID who made the transaction
-- `merchant` - Merchant/store name
-- `category` - Transaction category (Dining, Books, Supplies, etc.)
-- `amount` - Transaction amount
-- `paymentMethod` - Payment method used
-- `location` - Transaction location
-- `date` - Transaction date
-- `createdAt` - Record creation timestamp
-
-#### User Model (`models/User.js`)
-
-Stores user information:
-- `userId` - Unique user identifier
-- `email` - User email (optional)
-- `name` - User name (optional)
-- `balance` - Current wallet balance
-- `createdAt` - Account creation date
-- `updatedAt` - Last update timestamp
-
-#### Budget Model (`models/Budget.js`)
-
-Stores user budgets:
-- `userId` - User identifier
-- `name` - Budget name
-- `category` - Budget category
-- `amount` - Budget limit
-- `period` - Budget period (daily, weekly, monthly, semester)
-- `startDate` - Budget start date
-- `endDate` - Budget end date
-- `isActive` - Whether budget is active
-
-#### Event Model (`models/Event.js`)
-
-Stores campus events:
-- `eventId` - Unique event identifier
-- `name` - Event name
-- `category` - Event category
-- `location` - Event location
-- `startTime` - Event start time
-- `tags` - Event tags
-- `cost` - Event cost
-
-#### EventAttendance Model (`models/EventAttendance.js`)
-
-Tracks user event attendance:
-- `userId` - User identifier
-- `eventId` - Event identifier
-- `attendedAt` - Attendance timestamp
-
-#### ClassAttendance Model (`models/ClassAttendance.js`)
-
-Tracks class attendance:
-- `userId` - User identifier
-- `totalDays` - Total class days
-- `attendedDays` - Days attended
-- `dates` - Array of attended dates
-
-#### ActivityLog Model (`models/ActivityLog.js`)
-
-Logs user activities (gym, sports, walk, run):
-- `userId` - User identifier
-- `activityType` - Type of activity
-- `date` - Activity date
-- `createdAt` - Log creation timestamp
-
-#### RewardPoints Model (`models/RewardPoints.js`)
-
-Stores user reward points:
-- `userId` - User identifier
-- `totalPoints` - Total points earned
-- `updatedAt` - Last update timestamp
-
-#### Streak Model (`models/Streak.js`)
-
-Tracks user streaks:
-- `userId` - User identifier
-- `streakType` - Type of streak (classAttendance, activities, events)
-- `current` - Current streak length
-- `longest` - Longest streak achieved
-- `lastDate` - Last activity date
-
-#### Achievement Model (`models/Achievement.js`)
-
-Stores user achievements:
-- `userId` - User identifier
-- `achievementId` - Achievement identifier
-- `pointsEarned` - Points earned for achievement
-- `earnedAt` - Achievement earned timestamp
-
-### Using the Models
-
-```javascript
-const { User, Transaction } = require('./models');
-const connectDB = require('./config/database');
-
-async function example() {
-  // Connect to database
-  await connectDB();
-  
-  // Find user
-  const user = await User.findOne({ userId: 'U001' });
-  
-  // Get user transactions
-  const transactions = await Transaction.find({ userId: 'U001' })
-    .sort({ date: -1 })
-    .limit(10);
-  
-  // Create new transaction
-  const newTransaction = new Transaction({
-    transactionId: 'T0201',
-    userId: 'U001',
-    merchant: 'Starbucks',
-    category: 'Dining',
-    amount: 5.75,
-    paymentMethod: 'Dining Dollars',
-    location: 'Campus Center',
-    date: new Date()
-  });
-  await newTransaction.save();
-}
-```
-
-## API Endpoints
+## 🔌 API Endpoints
 
 ### Health Check
 ```
 GET /api/health
 ```
+Returns server status and database info.
 
 ### Transactions
 ```
-GET /api/transactions
-GET /api/transactions/summary?startDate=2025-11-01&endDate=2025-11-30
-GET /api/transactions/categories?startDate=2025-11-01&endDate=2025-11-30
-GET /api/transactions/trends?period=daily&startDate=2025-11-01&endDate=2025-11-30
+GET /api/transactions?userId=U001
+GET /api/transactions/summary?userId=U001
+GET /api/transactions/categories?userId=U001
+GET /api/transactions/trends?period=monthly&userId=U001
+POST /api/transactions
 ```
 
 ### Budgets
 ```
-GET /api/budgets
-GET /api/budgets/:id
-GET /api/budgets/:id/progress
-GET /api/budgets/alerts?threshold=80
+GET /api/budgets?userId=U001
 POST /api/budgets
+GET /api/budgets/:id
 ```
 
-### Activities (Feature 2: My Activity)
+### Activities
 ```
-GET /api/activities/events
-GET /api/activities/events/:eventId
-GET /api/activities/events/user/:userId
+GET /api/activities/events?category=academic&isFree=true
 POST /api/activities/events/:eventId/attend
 DELETE /api/activities/events/:eventId/attend
-GET /api/activities/class-attendance/:userId
-POST /api/activities/class-attendance/:userId
-PUT /api/activities/class-attendance/:userId/total
-GET /api/activities/logs/:userId
 POST /api/activities/logs/:userId
 GET /api/activities/summary/:userId
 ```
 
-**📖 See [ACTIVITY_API_DOCS.md](./ACTIVITY_API_DOCS.md) for complete My Activity API documentation**
-
-### Rewards (Feature 3: Rewards and Incentives)
+### Rewards
 ```
-GET /api/rewards/point-values
+GET /api/rewards/summary/:userId
 GET /api/rewards/points/:userId
 GET /api/rewards/streaks/:userId
-POST /api/rewards/streaks/:userId/update
-GET /api/rewards/achievements/:userId
-GET /api/rewards/summary/:userId
 ```
 
-**📖 See [REWARDS_API_DOCS.md](./REWARDS_API_DOCS.md) for complete Rewards API documentation**
+### Meal Plans
+```
+GET /api/meal-plans/:userId
+POST /api/meal-plans/:userId/use-swipe
+```
 
-## Importing Data
+**Note**: Default demo user is `U001`. Replace with any user ID from your data.
 
-### Import CSV Files
+---
 
+## 🛠️ Tech Stack
+
+### Backend
+- **Node.js** - JavaScript runtime
+- **Express.js** - Web framework
+- **Custom JSON Database** - File-based storage (no MongoDB needed!)
+
+### Frontend
+- **HTML5** - Structure
+- **CSS3** - Styling
+- **Vanilla JavaScript** - Interactivity
+- **Chart.js** - Data visualizations
+
+### Data
+- **CSV Files** - Sample transaction and event data
+- **JSON File Database** - Persistent storage in `data/db/database.json`
+
+---
+
+## 📊 Sample Data
+
+The project includes sample data:
+- **Transactions**: `data/wallet_transactions_sample.csv`
+- **Campus Events**: `data/campus_events_sample.csv`
+
+Import them using:
 ```bash
-# Import transactions from CSV
 node scripts/import-csv.js data/wallet_transactions_sample.csv
-
-# Clear existing data before importing
-node scripts/import-csv.js data/wallet_transactions_sample.csv --clear
+node scripts/import-events.js
 ```
 
-The import script:
-- Parses CSV files with proper date handling (MM/DD/YY format)
-- Maps CSV columns to database fields
-- Creates/updates user records automatically
-- Handles duplicate transactions
-- Shows progress and summary
+---
 
-### CSV Format
-
-Expected CSV columns:
-- `transaction_id` - Unique transaction ID
-- `user_id` - User identifier
-- `merchant` - Merchant name
-- `category` - Transaction category
-- `amount` - Transaction amount
-- `payment_method` - Payment method
-- `location` - Transaction location
-- `date` - Transaction date (MM/DD/YY format)
-
-## Response Formats
-
-All endpoints return data in chart-friendly formats:
-
-### Category Breakdown Example
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "category": "food",
-      "amount": 53.00,
-      "count": 5,
-      "percentage": 15.23
-    },
-    {
-      "category": "books",
-      "amount": 165.99,
-      "count": 2,
-      "percentage": 47.70
-    }
-  ],
-  "total": 348.00
-}
-```
-
-### Budget Progress Example
-```json
-{
-  "success": true,
-  "data": {
-    "budget": {
-      "id": 1,
-      "name": "Monthly Food Budget",
-      "category": "food",
-      "amount": 200.00,
-      "period": "monthly"
-    },
-    "progress": {
-      "spent": 53.00,
-      "remaining": 147.00,
-      "percentage": 26.50,
-      "status": "good"
-    },
-    "chartData": [
-      { "label": "Spent", "value": 53.00, "color": "#10b981" },
-      { "label": "Remaining", "value": 147.00, "color": "#e5e7eb" }
-    ]
-  }
-}
-```
-
-## Sample Data
-
-The backend uses MongoDB with real CSV sample data:
-- **200 transactions** from `data/wallet_transactions_sample.csv`
-- **20 users** automatically created from transaction data
-- **3 budgets** seeded via `npm run seed:budgets`
-- **20 events** from `data/campus_events_sample.csv` seeded via `npm run seed:events`
-
-### Seeding Data
+## 🔧 Available Scripts
 
 ```bash
-# Import transactions
-npm run import data/wallet_transactions_sample.csv --clear
+# Start the server
+npm start              # Production mode
+npm run dev           # Development mode (auto-reload with nodemon)
 
-# Seed budgets
-npm run seed:budgets --clear
-
-# Seed events
-npm run seed:events --clear
-```
-
-Categories are normalized:
-- `Dining` → `food`
-- `Transport` → `transportation`
-- `Supplies` → `other`
-- `Pharmacy` → `utilities`
-
-## Testing with Sample Data
-
-You can filter by `userId` to see data for specific users:
-```
-GET /api/transactions?userId=U001
-GET /api/transactions/categories?userId=U001
-GET /api/transactions/summary?userId=U001&startDate=2025-10-01&endDate=2025-10-31
-```
-
-## Frontend Integration
-
-**📖 See [FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md) for complete integration guide**
-
-Quick start:
-1. Make sure backend is running: `npm run dev`
-2. Backend URL: `http://localhost:5000/api` (or check your PORT in `.env`)
-3. CORS is enabled - frontend can connect from any origin
-4. See `api-examples.js` for code examples
-
-## Testing
-
-### Test API Endpoints
-
-```bash
-# Start server first
-npm run dev
-
-# In another terminal, run tests
-npm run test:api
-```
-
-### Manual Testing
-
-```bash
-# Health check
-curl http://localhost:5000/api/health
-
-# Get transactions
-curl http://localhost:5000/api/transactions
-
-# Get budgets
-curl http://localhost:5000/api/budgets
-
-# Get events
-curl http://localhost:5000/api/activities/events
-
-# Get rewards summary
-curl http://localhost:5000/api/rewards/summary/U001
-```
-
-See [TESTING_AND_NEXT_STEPS.md](./TESTING_AND_NEXT_STEPS.md) for complete testing guide.
-
-## Scripts
-
-```bash
-# Database Connection & Verification
-npm run test:connection    # Test MongoDB connection
-npm run verify             # Verify database integration
-npm run examples           # Run query examples
-
-# Data Import & Seeding
-npm run import             # Import transactions CSV
-npm run seed:budgets       # Seed sample budgets
-npm run seed:events        # Seed campus events
+# Import data
+node scripts/import-csv.js data/wallet_transactions_sample.csv
+node scripts/import-events.js
 
 # Testing
-npm run test:api           # Test all API endpoints
-
-# Server
-npm run dev                # Start development server (with auto-reload)
-npm start                  # Start production server
-
-# MongoDB Management (local)
-brew services start mongodb-community    # Start MongoDB
-brew services stop mongodb-community     # Stop MongoDB
-brew services list | grep mongodb        # Check MongoDB status
+node scripts/test-api-endpoints.js
 ```
 
-## Features Completed
+---
 
-✅ **Feature 1: Spending Dashboard + Budgeting**
-- Transaction management and filtering
-- Category breakdowns (chart-ready)
-- Spending summaries and trends
-- Budget tracking and progress
-- **✅ MongoDB database integration for persistence**
+## 📝 Code Examples
 
-✅ **Feature 2: My Activity**
-- Campus event browsing and attendance logging
-- Class attendance tracking
-- Gym/activity logging (gym, sports, walk, run)
-- Activity summaries and statistics
-- **✅ MongoDB database integration for persistence**
+### How Frontend Calls Backend API
 
-✅ **Feature 3: Rewards and Incentives**
-- Points system for streaks and achievements
-- Streak tracking (3 days, week, month milestones)
-- Automatic rewards when logging activities
-- Points for attending events and staying under budget
-- **✅ MongoDB database integration for persistence**
+**Example from `public/script.js`:**
+```javascript
+// Fetch meal plan data
+const response = await fetch(`${API_BASE_URL}/meal-plans/U001`);
+const data = await response.json();
 
-## Database Status
-
-All features are now using MongoDB for persistence:
-
-- ✅ **Transactions**: 200 documents in MongoDB
-- ✅ **Budgets**: 3 documents in MongoDB
-- ✅ **Users**: 20 documents in MongoDB
-- ✅ **Events**: 20 documents in MongoDB
-- ✅ **Activities**: EventAttendance, ClassAttendance, ActivityLog models ready
-- ✅ **Rewards**: RewardPoints, Streak, Achievement models ready
-
-### Verify Database
-
-```bash
-# Check database status
-npm run verify
-
-# View all collections
-mongosh mongodb://localhost:27017/smart-campus-wallet --eval "db.getCollectionNames()"
-
-# Check document counts
-mongosh mongodb://localhost:27017/smart-campus-wallet --eval "
-print('Transactions: ' + db.transactions.countDocuments());
-print('Budgets: ' + db.budgets.countDocuments());
-print('Users: ' + db.users.countDocuments());
-print('Events: ' + db.events.countDocuments());
-"
+// Update UI
+document.getElementById('remaining-swipes').textContent = data.data.remainingSwipes;
 ```
 
-## Next Steps
+### How Backend Handles Requests
 
-- [x] Add database integration (MongoDB) for persistence
-- [x] Migrate existing features to use MongoDB (Transactions & Budgets)
-- [x] Migrate Feature 2 (My Activity) to MongoDB
-- [x] Migrate Feature 3 (Rewards) to MongoDB
-- [ ] Add AI integration (budget recommendations, spending insights, predictions)
-- [ ] Add authentication
-- [ ] Add transaction CRUD operations (POST, PUT, DELETE)
-- [ ] Add user profile management
+**Example from `routes/mealPlans.js`:**
+```javascript
+router.get('/:userId', async (req, res) => {
+  const mealPlan = await MealPlan.findOne({ userId: req.params.userId });
+  res.json({ success: true, data: mealPlan });
+});
+```
 
-## License
+### How Database Works
+
+**Example from `db/json-db.js`:**
+```javascript
+// Collection class provides MongoDB-like methods
+const MealPlan = new Collection('mealPlans');
+
+// Use it like MongoDB
+await MealPlan.findOne({ userId: 'U001' });
+await MealPlan.create({ userId: 'U001', remainingSwipes: 220 });
+await MealPlan.findByIdAndUpdate(id, updates);
+```
+
+---
+
+## 🎯 Key Files Explained
+
+### `server.js`
+- Entry point of the application
+- Creates Express server
+- Registers all routes
+- Serves static files from `public/` folder
+- Handles API requests and returns JSON
+
+### `public/script.js`
+- Main frontend JavaScript file
+- Contains all API integration functions
+- Handles user interactions (button clicks, form submissions)
+- Updates DOM to show data
+- Creates charts using Chart.js
+
+### `db/json-db.js`
+- Custom database implementation
+- Reads/writes to `data/db/database.json`
+- Provides MongoDB-like API (`find`, `create`, `update`, `delete`)
+- Automatically saves changes to file
+
+### `routes/*.js`
+- Each file is a router module
+- Handles specific API endpoints
+- Fetches data from database
+- Returns JSON responses
+
+---
+
+## 🐛 Troubleshooting
+
+### Server won't start
+- Check if port 3000 is already in use
+- Make sure you ran `npm install`
+- Check for errors in terminal
+
+### No data showing
+- Import sample data: `node scripts/import-csv.js data/wallet_transactions_sample.csv`
+- Check browser console for API errors
+- Verify server is running on port 3000
+
+### Meal plan not working
+- Make sure `routes/mealPlans.js` is registered in `server.js`
+- Check that `MealPlan` collection is exported from `db/json-db.js`
+
+### Events not loading
+- Import events: `node scripts/import-events.js`
+- Check `data/db/database.json` for events collection
+
+---
+
+## 📱 Features Overview
+
+✅ **Meal Plan Tracking** - Track and deduct meal swipes  
+✅ **Spending Analytics** - Charts and breakdowns  
+✅ **Campus Events** - Browse and attend events  
+✅ **Activity Logging** - Log gym, sports, walks, runs  
+✅ **Rewards System** - Points, streaks, achievements  
+✅ **Leaderboard** - Compete with other students  
+✅ **Budget Management** - Track spending vs budgets  
+
+---
+
+## 🚢 Deployment
+
+The app can be deployed to:
+- **Railway** - Easy Node.js deployment
+- **Render** - Free tier available
+- **Heroku** - Classic platform
+- **Netlify** - For frontend + API functions
+
+No database setup required - uses JSON file storage!
+
+---
+
+## 📄 License
 
 ISC
+
+---
+
+## 👥 Built For
+
+**HackFest 2025 @ Rutgers Newark**
+
+This project helps college students manage their campus finances and stay engaged with campus life through an intuitive, reward-based system.
