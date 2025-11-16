@@ -1,27 +1,36 @@
 // API Configuration
-// Supports both same-domain and separate-domain deployments
+// Netlify-ready: Automatically detects deployment and uses correct backend URL
 const API_BASE_URL = (() => {
     // For local development, use localhost
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000/api';
     }
     
-    // Option 1: Use environment variable (set in Netlify/Vercel)
-    // Netlify: VITE_API_URL or REACT_APP_API_URL
-    // Vercel: NEXT_PUBLIC_API_URL
-    if (window.API_BACKEND_URL) {
-        return window.API_BACKEND_URL;
-    }
-    
-    // Option 2: Check for config.js file (for manual setup)
+    // Priority 1: Use config.js file (for Netlify - set your backend URL here)
+    // Create public/config.js with: window.APP_CONFIG = { API_BASE_URL: 'https://your-backend.railway.app/api' }
     if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
         return window.APP_CONFIG.API_BASE_URL;
     }
     
-    // Option 3: Same-domain deployment (frontend and backend on same URL)
-    // This is the default for Railway/Render full-stack deployment
+    // Priority 2: Use global variable set in HTML (for Netlify environment variables)
+    // Netlify can inject this at build time or via _headers/_redirects
+    if (window.API_BACKEND_URL) {
+        return window.API_BACKEND_URL;
+    }
+    
+    // Priority 3: Check for Netlify environment variable pattern
+    // Netlify sets these, but they're only available at build time for static sites
+    // So we use config.js instead
+    
+    // Priority 4: Same-domain deployment (Railway/Render full-stack)
+    // If frontend and backend are on same domain, use relative URL
     return window.location.origin + '/api';
 })();
+
+// Log API URL for debugging (only in development)
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    console.log('API Base URL:', API_BASE_URL);
+}
 
 // Helper function to safely parse JSON response
 async function safeJsonParse(response) {
