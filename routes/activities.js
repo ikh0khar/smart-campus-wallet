@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Event, EventAttendance, ClassAttendance, ActivityLog } = require('../models');
-const { updateStreak, awardEventPoints, awardActivityPoints } = require('../utils/rewardsMongo');
+const { updateStreak, awardEventPoints, awardActivityPoints, awardClassAttendancePoints } = require('../utils/rewardsMongo');
 
 // ============================================
 // EVENTS ENDPOINTS
@@ -323,6 +323,11 @@ router.post('/class-attendance/:userId', async (req, res) => {
 
     // Update class attendance streak
     const streakResult = await updateStreak(userId, 'classAttendance', dateStr);
+    
+    // Award points for class attendance (200 points)
+    const classPoints = await awardClassAttendancePoints(userId, dateStr);
+    const totalPointsEarned = (streakResult.pointsEarned || 0) + (classPoints?.pointsEarned || 0);
+    const finalTotalPoints = classPoints?.totalPoints || streakResult.totalPoints;
 
     res.json({
       success: true,
@@ -336,8 +341,8 @@ router.post('/class-attendance/:userId', async (req, res) => {
         rewards: {
           streakUpdated: streakResult.milestone,
           streakLength: streakResult.streakLength,
-          pointsEarned: streakResult.pointsEarned,
-          totalPoints: streakResult.totalPoints,
+          pointsEarned: totalPointsEarned,
+          totalPoints: finalTotalPoints,
         },
       },
     });

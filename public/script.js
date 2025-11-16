@@ -907,7 +907,7 @@ async function loadRewardsData() {
             let html = '<div class="rewards-dashboard">';
             
             // Points Hero Section
-            const totalPoints = data.data.points || 0;
+            const totalPoints = data.data.totalPoints || 0;
             const isFireTier = totalPoints >= 10000;
             
             html += `<div class="points-hero ${isFireTier ? 'fire-tier' : ''}">
@@ -1035,6 +1035,70 @@ async function loadRewardsData() {
             }
             
             html += '</div></div>';
+            
+            // Points Breakdown Section
+            if (data.data.pointsBreakdown) {
+                const breakdown = data.data.pointsBreakdown;
+                html += '<div class="rewards-section"><h3 class="section-subtitle">Points Breakdown</h3>';
+                html += '<div class="points-breakdown-grid">';
+                
+                // Class Attendance
+                html += `<div class="breakdown-card">
+                    <div class="breakdown-icon">🎓</div>
+                    <div class="breakdown-content">
+                        <h4 class="breakdown-title">Class Attendance</h4>
+                        <p class="breakdown-points">${breakdown.classAttendance.toLocaleString()} points</p>
+                        <p class="breakdown-value">200 points per day</p>
+                        <div class="breakdown-count">${Math.floor(breakdown.classAttendance / 200)} days logged</div>
+                    </div>
+                </div>`;
+                
+                // Physical Activities
+                html += `<div class="breakdown-card">
+                    <div class="breakdown-icon">💪</div>
+                    <div class="breakdown-content">
+                        <h4 class="breakdown-title">Physical Activities</h4>
+                        <p class="breakdown-points">${breakdown.physicalActivities.toLocaleString()} points</p>
+                        <p class="breakdown-value">100 points per activity</p>
+                        <div class="breakdown-count">${Math.floor(breakdown.physicalActivities / 100)} activities logged</div>
+                    </div>
+                </div>`;
+                
+                // Paid Events
+                html += `<div class="breakdown-card">
+                    <div class="breakdown-icon">💎</div>
+                    <div class="breakdown-content">
+                        <h4 class="breakdown-title">Paid Events</h4>
+                        <p class="breakdown-points">${breakdown.paidEvents.toLocaleString()} points</p>
+                        <p class="breakdown-value">300 points per event</p>
+                        <div class="breakdown-count">${Math.floor(breakdown.paidEvents / 300)} events attended</div>
+                    </div>
+                </div>`;
+                
+                // Free Events
+                html += `<div class="breakdown-card">
+                    <div class="breakdown-icon">📅</div>
+                    <div class="breakdown-content">
+                        <h4 class="breakdown-title">Free Events</h4>
+                        <p class="breakdown-points">${breakdown.freeEvents.toLocaleString()} points</p>
+                        <p class="breakdown-value">150 points per event</p>
+                        <div class="breakdown-count">${Math.floor(breakdown.freeEvents / 150)} events attended</div>
+                    </div>
+                </div>`;
+                
+                // Budget Checks
+                html += `<div class="breakdown-card">
+                    <div class="breakdown-icon">💰</div>
+                    <div class="breakdown-content">
+                        <h4 class="breakdown-title">Budget Compliance</h4>
+                        <p class="breakdown-points">${breakdown.budgetChecks.toLocaleString()} points</p>
+                        <p class="breakdown-value">50 points per check</p>
+                        <div class="breakdown-count">${Math.floor(breakdown.budgetChecks / 50)} budgets under limit</div>
+                    </div>
+                </div>`;
+                
+                html += '</div></div>';
+            }
             
             // Streaks Section - convert object to array format
             let streaksArray = [];

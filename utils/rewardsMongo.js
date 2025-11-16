@@ -15,13 +15,22 @@ const STREAK_POINTS = {
   90: 500,  // 3-month streak
 };
 
-// Point values for achievements
+// Point values for activities
+const ACTIVITY_POINTS = {
+  CLASS_ATTENDANCE: 200,      // Points for attending class
+  PHYSICAL_ACTIVITY: 100,     // Points for physical activities (gym, sports, walk, run)
+  PAID_EVENT: 300,            // Points for paid events
+  FREE_EVENT: 150,            // Points for free events
+  BUDGET_CHECK: 50,           // Points for staying under budget
+};
+
+// Point values for achievements (legacy)
 const ACHIEVEMENT_POINTS = {
   UNDER_BUDGET: 50,
-  ACADEMIC_EVENT: 20,
-  FREE_EVENT: 10,
-  ACTIVITY_DAY: 5,
-  PERFECT_CLASS_ATTENDANCE: 100,
+  ACADEMIC_EVENT: 300,        // Academic events treated as paid events
+  FREE_EVENT: 150,
+  ACTIVITY_DAY: 100,          // Physical activities
+  PERFECT_CLASS_ATTENDANCE: 200,
 };
 
 // Initialize or get user points
@@ -153,28 +162,27 @@ async function awardAchievement(userId, achievementId, points) {
 // Check if user stayed under budget
 async function checkBudgetAchievement(userId, budgetProgress) {
   if (budgetProgress.percentage < 100 && budgetProgress.status !== 'exceeded') {
-    return await awardAchievement(userId, `UNDER_BUDGET_${budgetProgress.budget.category}`, ACHIEVEMENT_POINTS.UNDER_BUDGET);
+    return await awardAchievement(userId, `UNDER_BUDGET_${budgetProgress.budget.category}`, ACTIVITY_POINTS.BUDGET_CHECK);
   }
   return null;
 }
 
 // Award points for attending events
 async function awardEventPoints(userId, event) {
-  // Academic events get bonus points
+  // Academic events get paid event points (300)
   if (event.category === 'Academic') {
-    return await awardAchievement(userId, `ACADEMIC_EVENT_${event.eventId}`, ACHIEVEMENT_POINTS.ACADEMIC_EVENT);
+    return await awardAchievement(userId, `ACADEMIC_EVENT_${event.eventId}`, ACTIVITY_POINTS.PAID_EVENT);
   }
   
-  // Paid events get more points than free events
+  // Paid events: 300 points
   const eventCost = parseFloat(event.cost) || 0;
   if (eventCost > 0) {
-    // Paid events: Award 25 points (more than free events)
-    return await awardAchievement(userId, `PAID_EVENT_${event.eventId}`, 25);
+    return await awardAchievement(userId, `PAID_EVENT_${event.eventId}`, ACTIVITY_POINTS.PAID_EVENT);
   }
   
-  // Free events get standard points
+  // Free events: 150 points
   if (eventCost === 0 || event.cost === '0') {
-    return await awardAchievement(userId, `FREE_EVENT_${event.eventId}`, ACHIEVEMENT_POINTS.FREE_EVENT);
+    return await awardAchievement(userId, `FREE_EVENT_${event.eventId}`, ACTIVITY_POINTS.FREE_EVENT);
   }
   
   return null;
@@ -183,7 +191,13 @@ async function awardEventPoints(userId, event) {
 // Award points for daily activity (only once per day)
 async function awardActivityPoints(userId, date) {
   const dateStr = date || new Date().toISOString().split('T')[0];
-  return await awardAchievement(userId, `ACTIVITY_${dateStr}`, ACHIEVEMENT_POINTS.ACTIVITY_DAY);
+  return await awardAchievement(userId, `ACTIVITY_${dateStr}`, ACTIVITY_POINTS.PHYSICAL_ACTIVITY);
+}
+
+// Award points for class attendance
+async function awardClassAttendancePoints(userId, date) {
+  const dateStr = date || new Date().toISOString().split('T')[0];
+  return await awardAchievement(userId, `CLASS_ATTENDANCE_${dateStr}`, ACTIVITY_POINTS.CLASS_ATTENDANCE);
 }
 
 // Get user points
@@ -220,11 +234,47 @@ async function getUserAchievements(userId) {
   return achievements.map(a => a.achievementId);
 }
 
+// Get points breakdown by activity type
+async function getPointsBreakdown(userId) {
+  const achievements = await Achievement.find({ userId }).sort({ earnedAt: -1 }).lean();
+  
+  const breakdown = {
+    classAttendance: 0,
+    physicalActivities: 0,
+    paidEvents: 0,
+    freeEvents: 0,
+    budgetChecks: 0,
+    total: 0
+  };
+  
+  achievements.forEach(achievement => {
+    const achievementId = achievement.achievementId;
+    const points = achievement.pointsEarned || 0;
+    
+    if (achievementId.startsWith('CLASS_ATTENDANCE_')) {
+      breakdown.classAttendance += points;
+    } else if (achievementId.startsWith('ACTIVITY_')) {
+      breakdown.physicalActivities += points;
+    } else if (achievementId.startsWith('PAID_EVENT_') || achievementId.startsWith('ACADEMIC_EVENT_')) {
+      breakdown.paidEvents += points;
+    } else if (achievementId.startsWith('FREE_EVENT_')) {
+      breakdown.freeEvents += points;
+    } else if (achievementId.startsWith('UNDER_BUDGET_')) {
+      breakdown.budgetChecks += points;
+    }
+    
+    breakdown.total += points;
+  });
+  
+  return breakdown;
+}
+
 // Get rewards summary
 async function getRewardsSummary(userId) {
   const points = await getUserPoints(userId);
   const streaks = await getUserStreaks(userId);
   const achievements = await getUserAchievements(userId);
+  const pointsBreakdown = await getPointsBreakdown(userId);
   
   // Calculate next milestone for each streak
   const getNextMilestone = (currentStreak) => {
@@ -243,6 +293,7 @@ async function getRewardsSummary(userId) {
   
   return {
     totalPoints: points,
+    pointsBreakdown,
     streaks: {
       classAttendance: {
         current: streaks.classAttendance.current,
@@ -273,11 +324,14 @@ module.exports = {
   checkBudgetAchievement,
   awardEventPoints,
   awardActivityPoints,
+  awardClassAttendancePoints,
   getUserPoints,
   getUserStreaks,
   getUserAchievements,
   getRewardsSummary,
+  getPointsBreakdown,
   STREAK_POINTS,
   ACHIEVEMENT_POINTS,
+  ACTIVITY_POINTS,
 };
 

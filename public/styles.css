@@ -1432,6 +1432,76 @@ body {
     box-shadow: 0 0 10px rgba(255, 87, 34, 0.6);
 }
 
+/* Points Breakdown Section */
+.points-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.breakdown-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 25px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.breakdown-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(189, 51, 70, 0.3);
+    border-color: rgba(189, 51, 70, 0.5);
+}
+
+.breakdown-icon {
+    font-size: 2.5rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(189, 51, 70, 0.2);
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.breakdown-content {
+    flex: 1;
+}
+
+.breakdown-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 10px 0;
+}
+
+.breakdown-points {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #FFD700;
+    margin: 0 0 5px 0;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.breakdown-value {
+    font-size: 0.9rem;
+    color: #888;
+    margin: 5px 0;
+}
+
+.breakdown-count {
+    font-size: 0.85rem;
+    color: #4CAF50;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .points-hero {
@@ -1465,6 +1535,14 @@ body {
     
     .tier-title {
         font-size: 1.3rem;
+    }
+    
+    .points-breakdown-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .breakdown-points {
+        font-size: 1.5rem;
     }
 }
 
