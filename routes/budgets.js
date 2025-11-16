@@ -77,6 +77,17 @@ const calculateSpent = async (budget, transactions = null) => {
 // @access  Public
 router.get('/', async (req, res) => {
   try {
+    // Check MongoDB connection
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not connected. Please check MongoDB connection.',
+        error: 'MongoDB connection required',
+        diagnostic: '/api/diagnostic'
+      });
+    }
+
     const { isActive, userId } = req.query;
 
     // Build query
