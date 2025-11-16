@@ -410,15 +410,32 @@ async function loadRewardsData() {
                 </div>
             </div>`;
             
-            // Streaks Section
-            if (data.data.streaks && data.data.streaks.length > 0) {
+            // Streaks Section - convert object to array format
+            let streaksArray = [];
+            if (data.data.streaks) {
+                if (Array.isArray(data.data.streaks)) {
+                    streaksArray = data.data.streaks;
+                } else {
+                    // Convert object format to array
+                    Object.keys(data.data.streaks).forEach(key => {
+                        const streak = data.data.streaks[key];
+                        streaksArray.push({
+                            type: key,
+                            current: streak.current || streak.currentStreak || 0,
+                            longest: streak.longest || streak.longestStreak || 0
+                        });
+                    });
+                }
+            }
+            
+            if (streaksArray.length > 0) {
                 html += '<div class="rewards-section"><h3 class="section-subtitle">Active Streaks</h3>';
                 html += '<div class="streaks-grid">';
-                data.data.streaks.forEach(streak => {
+                streaksArray.forEach(streak => {
                     const streakType = streak.type || 'streak';
                     const current = streak.current || 0;
                     const longest = streak.longest || 0;
-                    const streakName = streakType.charAt(0).toUpperCase() + streakType.slice(1).replace(/([A-Z])/g, ' $1');
+                    const streakName = streakType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
                     
                     html += `<div class="streak-card">
                         <div class="streak-icon">🔥</div>
