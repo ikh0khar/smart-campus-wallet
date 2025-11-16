@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
 
     // Build MongoDB query
     const query = {};
-
+    
     if (userId) {
       query.userId = userId;
     }
@@ -106,7 +106,7 @@ router.get('/', async (req, res) => {
 router.get('/summary', async (req, res) => {
   try {
     const { startDate, endDate, userId } = req.query;
-
+    
     // Build MongoDB query
     const query = {};
     if (userId) {
@@ -173,7 +173,7 @@ router.get('/summary', async (req, res) => {
 router.get('/categories', async (req, res) => {
   try {
     const { startDate, endDate, userId } = req.query;
-
+    
     // Build MongoDB query
     const query = {};
     if (userId) {
@@ -246,7 +246,7 @@ router.get('/categories', async (req, res) => {
 router.get('/trends', async (req, res) => {
   try {
     const { period = 'daily', startDate, endDate, userId } = req.query;
-
+    
     // Build MongoDB query
     const query = {};
     if (userId) {
