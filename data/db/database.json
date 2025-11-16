@@ -1072,7 +1072,80 @@
       "updatedAt": "2025-11-16T08:50:14.851Z"
     }
   ],
-  "eventAttendances": [],
+  "eventAttendances": [
+    {
+      "userId": "U001",
+      "eventId": "E018",
+      "attendedAt": "2025-11-16T08:56:23.070Z",
+      "_id": "id_1763283383070_0m31ij9qb",
+      "createdAt": "2025-11-16T08:56:23.070Z",
+      "updatedAt": "2025-11-16T08:56:23.070Z"
+    },
+    {
+      "userId": "U001",
+      "eventId": "E002",
+      "attendedAt": "2025-11-16T08:57:47.210Z",
+      "_id": "id_1763283467210_mf0xjov6b",
+      "createdAt": "2025-11-16T08:57:47.210Z",
+      "updatedAt": "2025-11-16T08:57:47.210Z"
+    },
+    {
+      "userId": "U001",
+      "eventId": "E005",
+      "attendedAt": "2025-11-16T08:58:11.471Z",
+      "_id": "id_1763283491471_8c9nzd965",
+      "createdAt": "2025-11-16T08:58:11.471Z",
+      "updatedAt": "2025-11-16T08:58:11.471Z"
+    },
+    {
+      "userId": "U001",
+      "eventId": "E003",
+      "attendedAt": "2025-11-16T08:58:20.310Z",
+      "_id": "id_1763283500310_tlrykh1dy",
+      "createdAt": "2025-11-16T08:58:20.310Z",
+      "updatedAt": "2025-11-16T08:58:20.310Z"
+    },
+    {
+      "userId": "U001",
+      "eventId": "E001",
+      "attendedAt": "2025-11-16T08:59:06.945Z",
+      "_id": "id_1763283546945_yzuw38lan",
+      "createdAt": "2025-11-16T08:59:06.945Z",
+      "updatedAt": "2025-11-16T08:59:06.945Z"
+    },
+    {
+      "userId": "U001",
+      "eventId": "E004",
+      "attendedAt": "2025-11-16T08:59:08.101Z",
+      "_id": "id_1763283548101_a2uislojx",
+      "createdAt": "2025-11-16T08:59:08.101Z",
+      "updatedAt": "2025-11-16T08:59:08.101Z"
+    },
+    {
+      "userId": "U001",
+      "eventId": "E008",
+      "attendedAt": "2025-11-16T08:59:10.415Z",
+      "_id": "id_1763283550415_zoj3qzrna",
+      "createdAt": "2025-11-16T08:59:10.415Z",
+      "updatedAt": "2025-11-16T08:59:10.415Z"
+    },
+    {
+      "userId": "U001",
+      "eventId": "E007",
+      "attendedAt": "2025-11-16T08:59:48.143Z",
+      "_id": "id_1763283588143_un6y6fwup",
+      "createdAt": "2025-11-16T08:59:48.143Z",
+      "updatedAt": "2025-11-16T08:59:48.143Z"
+    },
+    {
+      "userId": "U001",
+      "eventId": "E009",
+      "attendedAt": "2025-11-16T08:59:56.293Z",
+      "_id": "id_1763283596293_lce3iq2jm",
+      "createdAt": "2025-11-16T08:59:56.293Z",
+      "updatedAt": "2025-11-16T08:59:56.293Z"
+    }
+  ],
   "classAttendances": [
     {
       "userId": "user123",
@@ -1199,6 +1272,16 @@
       "_id": "id_1763282093785_498fjca8s",
       "createdAt": "2025-11-16T08:34:53.785Z",
       "updatedAt": "2025-11-16T08:34:53.786Z"
+    },
+    {
+      "userId": "U001",
+      "streakType": "events",
+      "current": 1,
+      "longest": 1,
+      "lastDate": "2025-11-16",
+      "_id": "id_1763283121793_ta9i0t09i",
+      "createdAt": "2025-11-16T08:52:01.793Z",
+      "updatedAt": "2025-11-16T08:59:56.293Z"
     }
   ],
   "achievements": [
@@ -1223,6 +1306,6 @@
   ],
   "_meta": {
     "createdAt": "2025-11-16T07:28:48.253Z",
-    "lastModified": "2025-11-16T08:50:14.851Z"
+    "lastModified": "2025-11-16T08:59:57.502Z"
   }
 }

@@ -513,7 +513,7 @@ function displayEvents(events, summaryData) {
                 </div>
                 <div class="event-footer">
                     ${attendingBadge}
-                    <button class="btn-attend ${isAttending ? 'btn-unattend' : 'btn-join'}" onclick="toggleAttendance('${event.eventId}', ${isAttending})">
+                    <button class="btn-attend ${isAttending ? 'btn-unattend' : 'btn-join'}" onclick="toggleAttendance('${event.eventId}', ${isAttending}); return false;">
                         ${isAttending ? 'Cancel Attendance' : 'Mark Attending'}
                     </button>
                 </div>
@@ -680,16 +680,19 @@ async function toggleAttendance(eventId, currentlyAttending) {
                 body: JSON.stringify({ userId })
             });
             
-            if (response.ok) {
-                const data = await safeJsonParse(response);
-                updateEventsStatus('Event attendance removed');
-                // Update the event in allEvents
+            const data = await safeJsonParse(response);
+            if (data.success) {
+                updateEventsStatus('✓ Event attendance removed');
+                // Update the event in allEvents immediately
                 const event = allEvents.find(e => e.eventId === eventId);
                 if (event) {
                     event.isAttending = false;
                 }
                 // Reload to update display
-                loadActivityData();
+                await loadActivityData();
+            } else {
+                updateEventsStatus(`Error: ${data.message || 'Failed to remove attendance'}`);
+                console.error('Remove attendance error:', data);
             }
         } else {
             // Add attendance
@@ -701,32 +704,35 @@ async function toggleAttendance(eventId, currentlyAttending) {
                 body: JSON.stringify({ userId })
             });
             
-            if (response.ok) {
-                const data = await safeJsonParse(response);
-                if (data.success && data.data && data.data.rewards) {
+            const data = await safeJsonParse(response);
+            if (data.success) {
+                if (data.data && data.data.rewards) {
                     const points = data.data.rewards.pointsEarned || 0;
                     const totalPoints = data.data.rewards.totalPoints || 0;
                     const streak = data.data.rewards.streakLength || 0;
-                    updateEventsStatus(`✓ Attended! Earned ${points} points (${streak} day streak) | Total: ${totalPoints} pts`);
+                    updateEventsStatus(`✓ Attended! Earned ${points} points${streak > 0 ? ` (${streak} day streak)` : ''} | Total: ${totalPoints} pts`);
                     // Refresh rewards display
                     if (window.location.pathname === '/rewards.html' && typeof loadRewardsData === 'function') {
                         setTimeout(loadRewardsData, 500);
                     }
                 } else {
-                    updateEventsStatus('✓ Event attendance logged');
+                    updateEventsStatus('✓ Event attendance logged successfully!');
                 }
-                // Update the event in allEvents
+                // Update the event in allEvents immediately
                 const event = allEvents.find(e => e.eventId === eventId);
                 if (event) {
                     event.isAttending = true;
                 }
                 // Reload to update display
-                loadActivityData();
+                await loadActivityData();
+            } else {
+                updateEventsStatus(`Error: ${data.message || 'Failed to log attendance'}`);
+                console.error('Log attendance error:', data);
             }
         }
     } catch (error) {
         console.error('Error toggling attendance:', error);
-        updateEventsStatus('Failed to update attendance');
+        updateEventsStatus('Failed to update attendance. Please try again.');
     }
 }
 

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 // Use JSON database instead of MongoDB
-const { Event, EventAttendance, ClassAttendance, ActivityLog } = require('../db/json-db');
+const { Event, EventAttendance, ClassAttendance, ActivityLog, RewardPoints } = require('../db/json-db');
 const { updateStreak, awardEventPoints, awardActivityPoints, awardClassAttendancePoints } = require('../utils/rewardsJson');
 
 // ============================================
@@ -197,49 +197,118 @@ router.post('/events/:eventId/attend', async (req, res) => {
       });
     }
 
-    // Create or check attendance
-    let attendance = await EventAttendance.findOneAndUpdate(
-      { userId, eventId },
-      { userId, eventId, attendedAt: new Date() },
-      { upsert: true, new: true }
-    );
+    // Check if attendance already exists
+    let attendance = await EventAttendance.findOne({ userId, eventId });
     
-    // If not found or created, try to find existing
     if (!attendance) {
-      attendance = await EventAttendance.findOne({ userId, eventId });
+      // Create new attendance record
+      attendance = await EventAttendance.create({
+        userId,
+        eventId,
+        attendedAt: new Date()
+      });
+    } else {
+      // Update existing attendance timestamp
+      attendance = await EventAttendance.findByIdAndUpdate(
+        attendance._id,
+        { attendedAt: new Date() },
+        { new: true }
+      );
     }
 
-    // Get all attended events
-    const attendedEventIds = await EventAttendance.distinct('eventId', { userId });
+    // Get all attended event IDs for this user
+    const attendanceResult = await EventAttendance.find({ userId });
+    const attendances = await attendanceResult.lean();
+    const attendedEventIds = [...new Set(attendances.map(a => a.eventId).filter(id => id))];
 
-    // Update event streak and award points
-    const streakResult = await updateStreak(userId, 'events', new Date().toISOString().split('T')[0]);
+    // Calculate rewards (optional - errors won't fail the request)
+    let streakResult = { milestone: false, streakLength: 0, pointsEarned: 0 };
     let eventPoints = null;
-    if (event) {
-      eventPoints = await awardEventPoints(userId, event.toObject());
+    let totalPointsEarned = 0;
+    let currentTotalPoints = 0;
+    
+    // Try to award points and update streaks (but don't fail if errors)
+    try {
+      streakResult = await updateStreak(userId, 'events', new Date().toISOString().split('T')[0]);
+      if (streakResult && streakResult.pointsEarned) {
+        totalPointsEarned += streakResult.pointsEarned;
+      }
+    } catch (streakError) {
+      console.error('Streak update error (non-fatal):', streakError.message);
+    }
+    
+    try {
+      if (event && typeof event === 'object') {
+        const eventObj = {
+          eventId: event.eventId || eventId,
+          category: event.category || 'Other',
+          cost: parseFloat(event.cost) || 0
+        };
+        eventPoints = await awardEventPoints(userId, eventObj);
+        if (eventPoints && eventPoints.pointsEarned) {
+          totalPointsEarned += eventPoints.pointsEarned;
+        }
+      }
+    } catch (pointsError) {
+      console.error('Points award error (non-fatal):', pointsError.message);
     }
 
+    // Get current total points
+    try {
+      const totalPointsResult = await RewardPoints.findOne({ userId });
+      currentTotalPoints = totalPointsResult ? (totalPointsResult.totalPoints || 0) : 0;
+    } catch (pointsError) {
+      // Continue without total points
+    }
+
+    // Return success - attendance was logged
     res.json({
       success: true,
-      message: 'Event attendance logged',
+      message: 'Event attendance logged successfully',
       data: {
         eventId,
         userId,
         attendedEvents: attendedEventIds,
         rewards: {
-          streakUpdated: streakResult.milestone,
-          streakLength: streakResult.streakLength,
-          pointsEarned: streakResult.pointsEarned + (eventPoints?.pointsEarned || 0),
-          totalPoints: streakResult.totalPoints + (eventPoints?.pointsEarned || 0),
+          streakUpdated: streakResult.milestone || false,
+          streakLength: streakResult.streakLength || 0,
+          pointsEarned: totalPointsEarned,
+          totalPoints: currentTotalPoints,
         },
       },
     });
   } catch (error) {
     console.error('Log event attendance error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-    });
+    console.error('Error stack:', error.stack);
+    // If attendance was created, still return success
+    const attendanceCheck = await EventAttendance.findOne({ userId, eventId });
+    if (attendanceCheck) {
+      const attendanceResult = await EventAttendance.find({ userId });
+      const attendances = await attendanceResult.lean();
+      const attendedEventIds = [...new Set(attendances.map(a => a.eventId).filter(id => id))];
+      
+      res.json({
+        success: true,
+        message: 'Event attendance logged (rewards calculation had errors)',
+        data: {
+          eventId,
+          userId,
+          attendedEvents: attendedEventIds,
+          rewards: {
+            streakUpdated: false,
+            streakLength: 0,
+            pointsEarned: 0,
+            totalPoints: 0,
+          },
+        },
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Server error',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
   }
 });
 
@@ -275,9 +344,11 @@ router.delete('/events/:eventId/attend', async (req, res) => {
     });
   } catch (error) {
     console.error('Remove event attendance error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
