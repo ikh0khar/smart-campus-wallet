@@ -486,6 +486,7 @@ module.exports = {
   RewardPoints: new Collection('rewardPoints'),
   Streak: new Collection('streaks'),
   Achievement: new Collection('achievements'),
+  MealPlan: new Collection('mealPlans'),
   
   // Helper functions
   loadDB,

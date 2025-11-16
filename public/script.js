@@ -174,9 +174,28 @@ async function loadBudgetingData() {
         if (summaryData.success && transactionsData.success && categoriesData.success) {
             let html = '<div class="budget-dashboard">';
             
-            // Meal Plan Section
-            if (mealPlanData.success && mealPlanData.data) {
-                const mealPlan = mealPlanData.data;
+            // Meal Plan Section - Always show, initialize if needed
+            let mealPlan = null;
+            if (mealPlanData && mealPlanData.success && mealPlanData.data) {
+                mealPlan = mealPlanData.data;
+            } else {
+                // Initialize meal plan if it doesn't exist
+                try {
+                    const initResponse = await fetch(`${API_BASE_URL}/meal-plans/${defaultUserId}`);
+                    const initData = await safeJsonParse(initResponse);
+                    if (initData && initData.success && initData.data) {
+                        mealPlan = initData.data;
+                    } else {
+                        // Default values if API fails
+                        mealPlan = { totalSwipes: 220, remainingSwipes: 220, usedSwipes: 0 };
+                    }
+                } catch (err) {
+                    console.error('Error initializing meal plan:', err);
+                    mealPlan = { totalSwipes: 220, remainingSwipes: 220, usedSwipes: 0 };
+                }
+            }
+            
+            if (mealPlan) {
                 const percentageUsed = mealPlan.totalSwipes > 0 ? ((mealPlan.usedSwipes / mealPlan.totalSwipes) * 100).toFixed(1) : 0;
                 
                 html += '<div class="meal-plan-section">';
@@ -184,9 +203,9 @@ async function loadBudgetingData() {
                 html += '<h3 class="meal-plan-title">📅 Meal Plan</h3>';
                 html += '<div class="meal-plan-info">';
                 html += `<div class="meal-plan-stats">`;
-                html += `<div class="meal-plan-stat"><span class="stat-label">Remaining</span><span class="stat-value">${mealPlan.remainingSwipes}</span></div>`;
-                html += `<div class="meal-plan-stat"><span class="stat-label">Total</span><span class="stat-value">${mealPlan.totalSwipes}</span></div>`;
-                html += `<div class="meal-plan-stat"><span class="stat-label">Used</span><span class="stat-value">${mealPlan.usedSwipes}</span></div>`;
+                html += `<div class="meal-plan-stat"><span class="stat-label">Remaining</span><span class="stat-value">${mealPlan.remainingSwipes || 220}</span></div>`;
+                html += `<div class="meal-plan-stat"><span class="stat-label">Total</span><span class="stat-value">${mealPlan.totalSwipes || 220}</span></div>`;
+                html += `<div class="meal-plan-stat"><span class="stat-label">Used</span><span class="stat-value">${mealPlan.usedSwipes || 0}</span></div>`;
                 html += `</div>`;
                 html += `<div class="meal-plan-progress">`;
                 html += `<div class="progress-bar-container">`;
@@ -194,8 +213,9 @@ async function loadBudgetingData() {
                 html += `</div>`;
                 html += `<p class="progress-text">${percentageUsed}% used</p>`;
                 html += `</div>`;
-                html += `<button class="meal-swipe-btn" onclick="useMealSwipe('${defaultUserId}', this)" ${mealPlan.remainingSwipes <= 0 ? 'disabled' : ''}>`;
-                html += mealPlan.remainingSwipes <= 0 ? '❌ No Swipes Remaining' : '🍽️ Use Meal Swipe';
+                const remainingSwipes = mealPlan.remainingSwipes || 220;
+                html += `<button class="meal-swipe-btn" onclick="useMealSwipe('${defaultUserId}', this)" ${remainingSwipes <= 0 ? 'disabled' : ''}>`;
+                html += remainingSwipes <= 0 ? '❌ No Swipes Remaining' : '🍽️ Use Meal Swipe';
                 html += `</button>`;
                 html += `</div>`;
                 html += `</div>`;
@@ -272,10 +292,23 @@ async function loadBudgetingData() {
             }
             
             console.log('✅ Budgeting data loaded and displayed with charts');
+        } else {
+            // Show error if meal plan data failed but other data succeeded
+            let html = '<div class="budget-dashboard">';
+            if (mealPlanData.success === false) {
+                html += '<div class="error">Warning: Could not load meal plan data</div>';
+            }
+            html += '</div>';
+            if (contentDiv) {
+                contentDiv.innerHTML = html + (contentDiv.innerHTML || '');
+            }
         }
     } catch (error) {
         console.error('❌ Budgeting API Error:', error);
-        contentDiv.innerHTML = `<div class="error">Error loading budgeting data: ${error.message}</div>`;
+        const errorMsg = error.message || 'Unknown error';
+        if (contentDiv) {
+            contentDiv.innerHTML = `<div class="error">Error loading budgeting data: ${errorMsg}</div>`;
+        }
     }
 }
 

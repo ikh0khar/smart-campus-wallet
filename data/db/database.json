@@ -1085,16 +1085,7 @@
       "updatedAt": "2025-11-16T08:50:14.851Z"
     }
   ],
-  "eventAttendances": [
-    {
-      "userId": "U001",
-      "eventId": "E001",
-      "attendedAt": "2025-11-16T14:27:41.755Z",
-      "_id": "id_1763303261755_t3vylz44o",
-      "createdAt": "2025-11-16T14:27:41.755Z",
-      "updatedAt": "2025-11-16T14:27:41.755Z"
-    }
-  ],
+  "eventAttendances": [],
   "classAttendances": [
     {
       "userId": "user123",
@@ -1403,8 +1394,8 @@
     },
     {
       "userId": "U001",
-      "totalPoints": 2700,
-      "updatedAt": "2025-11-16T14:27:41.758Z",
+      "totalPoints": 2550,
+      "updatedAt": "2025-11-16T14:36:41.643Z",
       "_id": "id_1763282093786_oenkcenqk",
       "createdAt": "2025-11-16T08:34:53.786Z"
     }
@@ -1568,19 +1559,21 @@
       "_id": "id_1763284410940_hzh7ekymz",
       "createdAt": "2025-11-16T09:13:30.940Z",
       "updatedAt": "2025-11-16T09:13:30.940Z"
-    },
-    {
-      "userId": "U001",
-      "achievementId": "FREE_EVENT_E001",
-      "pointsEarned": 150,
-      "earnedAt": "2025-11-16T14:27:41.758Z",
-      "_id": "id_1763303261758_ecpjwb8n8",
-      "createdAt": "2025-11-16T14:27:41.758Z",
-      "updatedAt": "2025-11-16T14:27:41.758Z"
     }
   ],
   "_meta": {
     "createdAt": "2025-11-16T07:28:48.253Z",
-    "lastModified": "2025-11-16T14:27:41.758Z"
-  }
+    "lastModified": "2025-11-16T14:39:37.563Z"
+  },
+  "mealPlans": [
+    {
+      "_id": "mealplan_1763303976526_g9qdz3ol7",
+      "userId": "U001",
+      "totalSwipes": 220,
+      "remainingSwipes": 219,
+      "usedSwipes": 1,
+      "createdAt": "2025-11-16T14:39:36.526Z",
+      "updatedAt": "2025-11-16T14:39:37.563Z"
+    }
+  ]
 }

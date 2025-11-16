@@ -1,9 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const jsonDB = require('../db/json-db');
-
-// Initialize meal plan collection
-const MealPlan = jsonDB.Collection('mealPlans');
+const { MealPlan } = require('../db/json-db');
 
 // Initialize meal plan for user if it doesn't exist
 async function initializeMealPlan(userId) {
