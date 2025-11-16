@@ -1,15 +1,14 @@
 // API Configuration
-// For local development, use localhost
-// For production, set API_BACKEND_URL environment variable or update this directly
+// Since frontend and backend are on the same server, use relative URLs
+// This works for both local development and production deployments
 const API_BASE_URL = (() => {
-    // Check if we're in development (localhost)
+    // For local development, use localhost
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000/api';
     }
-    // For production, try to use environment variable or fallback to origin
-    // Update this with your backend URL after deploying backend
-    const backendUrl = window.API_BACKEND_URL || 'https://your-backend-url.railway.app/api';
-    return backendUrl;
+    // For production, use the same origin (full-stack deployment)
+    // This means frontend and backend are on the same domain
+    return window.location.origin + '/api';
 })();
 
 // Helper function to safely parse JSON response
