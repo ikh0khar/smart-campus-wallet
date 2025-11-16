@@ -1217,6 +1217,221 @@ body {
     margin-bottom: 5px;
 }
 
+/* Rewards Tiers Section */
+.rewards-tiers-container {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.tier-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 30px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.tier-card.available {
+    border-color: rgba(76, 175, 80, 0.5);
+    background: rgba(76, 175, 80, 0.1);
+    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.2);
+}
+
+.tier-card.tier-fire {
+    border-color: rgba(255, 87, 34, 0.5);
+    background: rgba(255, 87, 34, 0.1);
+}
+
+.tier-card.tier-fire.active {
+    border-color: rgba(255, 87, 34, 0.8);
+    background: rgba(255, 87, 34, 0.2);
+    box-shadow: 0 8px 30px rgba(255, 87, 34, 0.4);
+}
+
+.tier-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.points-hero.fire-tier {
+    border-color: rgba(255, 87, 34, 0.6);
+    background: linear-gradient(135deg, rgba(255, 87, 34, 0.3) 0%, rgba(255, 87, 34, 0.1) 100%);
+    box-shadow: 0 8px 32px rgba(255, 87, 34, 0.4);
+}
+
+.tier-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.tier-icon {
+    font-size: 3rem;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    flex-shrink: 0;
+}
+
+.tier-card.tier-bronze .tier-icon {
+    background: rgba(205, 127, 50, 0.3);
+}
+
+.tier-card.tier-silver .tier-icon {
+    background: rgba(192, 192, 192, 0.3);
+}
+
+.tier-card.tier-fire .tier-icon {
+    background: rgba(255, 87, 34, 0.3);
+}
+
+.tier-info {
+    flex: 1;
+}
+
+.tier-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 8px 0;
+}
+
+.tier-points {
+    font-size: 1.1rem;
+    color: #FFD700;
+    margin: 0;
+    font-weight: 600;
+}
+
+.fire-badge {
+    display: inline-block;
+    background: rgba(255, 87, 34, 0.3);
+    color: #FF5722;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-left: 10px;
+    font-weight: 700;
+}
+
+.tier-rewards {
+    margin-top: 15px;
+}
+
+.tier-merchants {
+    color: #ccc;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.tier-benefit {
+    color: #fff;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+.fire-benefits {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0 20px 0;
+    color: #ccc;
+    line-height: 2;
+}
+
+.fire-benefits li {
+    padding: 8px 0;
+    padding-left: 25px;
+    position: relative;
+}
+
+.fire-benefits li::before {
+    content: "🔥";
+    position: absolute;
+    left: 0;
+}
+
+.tier-available {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px 20px;
+    background: rgba(76, 175, 80, 0.2);
+    border-radius: 12px;
+    border: 2px solid rgba(76, 175, 80, 0.4);
+}
+
+.available-count {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #4CAF50;
+}
+
+.redeem-btn {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.redeem-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.tier-progress {
+    padding: 15px 0;
+}
+
+.progress-text {
+    display: block;
+    color: #888;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.fire-progress {
+    background: rgba(255, 87, 34, 0.2);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+
+.fire-fill {
+    background: linear-gradient(90deg, #FF5722 0%, #FF7043 100%);
+    box-shadow: 0 0 10px rgba(255, 87, 34, 0.6);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .points-hero {
@@ -1231,6 +1446,25 @@ body {
     
     .streaks-grid, .achievements-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .tier-available {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .redeem-btn {
+        width: 100%;
+    }
+    
+    .tier-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 2.5rem;
+    }
+    
+    .tier-title {
+        font-size: 1.3rem;
     }
 }
 

@@ -839,14 +839,133 @@ async function loadRewardsData() {
             
             // Points Hero Section
             const totalPoints = data.data.points || 0;
-            html += `<div class="points-hero">
-                <div class="points-icon">🏆</div>
+            const isFireTier = totalPoints >= 10000;
+            
+            html += `<div class="points-hero ${isFireTier ? 'fire-tier' : ''}">
+                <div class="points-icon">${isFireTier ? '🔥' : '🏆'}</div>
                 <div class="points-content">
                     <h3 class="points-label">Total Reward Points</h3>
                     <p class="points-value">${totalPoints.toLocaleString()}</p>
-                    <div class="points-subtitle">Keep earning points for your activities!</div>
+                    <div class="points-subtitle">
+                        ${isFireTier ? '🔥 Fire Tier Member - All rewards cost 50% less! 🔥' : `Keep earning points for your activities! ${10000 - totalPoints} points until Fire Tier`}
+                    </div>
                 </div>
             </div>`;
+            
+            // Rewards Tiers Section
+            html += '<div class="rewards-section"><h3 class="section-subtitle">Redeem Your Points</h3>';
+            html += '<div class="rewards-tiers-container">';
+            
+            // Calculate available vouchers
+            const pointsFor5Dollar = isFireTier ? 100 : 200; // Fire tier: half points
+            const pointsFor10Dollar = isFireTier ? 500 : 1000; // Fire tier: half points
+            
+            const available5Dollar = Math.floor(totalPoints / pointsFor5Dollar);
+            const available10Dollar = Math.floor(totalPoints / pointsFor10Dollar);
+            const pointsUntil5Dollar = pointsFor5Dollar - (totalPoints % pointsFor5Dollar);
+            const pointsUntil10Dollar = pointsFor10Dollar - (totalPoints % pointsFor10Dollar);
+            
+            // $5 Gift Card Tier
+            html += `<div class="tier-card tier-bronze ${available5Dollar > 0 ? 'available' : ''}">
+                <div class="tier-header">
+                    <div class="tier-icon">🎁</div>
+                    <div class="tier-info">
+                        <h4 class="tier-title">$5 Gift Card</h4>
+                        <p class="tier-points">${pointsFor5Dollar} points ${isFireTier ? '<span class="fire-badge">🔥 Fire Tier</span>' : ''}</p>
+                    </div>
+                </div>
+                <div class="tier-rewards">
+                    <p class="tier-merchants">Available at: Starbucks, Dunkin, Barnes & Noble, Amazon, Target, and more</p>
+                    ${available5Dollar > 0 
+                        ? `<div class="tier-available">
+                            <span class="available-count">${available5Dollar} voucher${available5Dollar > 1 ? 's' : ''} available!</span>
+                            <button class="redeem-btn" onclick="alert('Contact support to redeem your $5 gift card vouchers!')">Redeem Now</button>
+                          </div>`
+                        : `<div class="tier-progress">
+                            <span class="progress-text">${pointsUntil5Dollar} more points needed</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${((totalPoints % pointsFor5Dollar) / pointsFor5Dollar) * 100}%"></div>
+                            </div>
+                          </div>`
+                    }
+                </div>
+            </div>`;
+            
+            // $10 Gift Card Tier
+            html += `<div class="tier-card tier-silver ${available10Dollar > 0 ? 'available' : ''}">
+                <div class="tier-header">
+                    <div class="tier-icon">💎</div>
+                    <div class="tier-info">
+                        <h4 class="tier-title">$10 Gift Card</h4>
+                        <p class="tier-points">${pointsFor10Dollar} points ${isFireTier ? '<span class="fire-badge">🔥 Fire Tier</span>' : ''}</p>
+                    </div>
+                </div>
+                <div class="tier-rewards">
+                    <p class="tier-merchants">Available at: Starbucks, Dunkin, Barnes & Noble, Amazon, Target, and more</p>
+                    ${available10Dollar > 0 
+                        ? `<div class="tier-available">
+                            <span class="available-count">${available10Dollar} voucher${available10Dollar > 1 ? 's' : ''} available!</span>
+                            <button class="redeem-btn" onclick="alert('Contact support to redeem your $10 gift card vouchers!')">Redeem Now</button>
+                          </div>`
+                        : `<div class="tier-progress">
+                            <span class="progress-text">${pointsUntil10Dollar} more points needed</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${((totalPoints % pointsFor10Dollar) / pointsFor10Dollar) * 100}%"></div>
+                            </div>
+                          </div>`
+                    }
+                </div>
+            </div>`;
+            
+            // Fire Tier Info
+            if (!isFireTier) {
+                const pointsUntilFireTier = 10000 - totalPoints;
+                html += `<div class="tier-card tier-fire">
+                    <div class="tier-header">
+                        <div class="tier-icon">🔥</div>
+                        <div class="tier-info">
+                            <h4 class="tier-title">Fire Tier</h4>
+                            <p class="tier-points">10,000 points to unlock</p>
+                        </div>
+                    </div>
+                    <div class="tier-rewards">
+                        <p class="tier-benefit">🔥 <strong>Unlock Fire Tier Benefits:</strong></p>
+                        <ul class="fire-benefits">
+                            <li>All gift card rewards cost <strong>50% less</strong> for the entire year!</li>
+                            <li>$5 gift cards: 100 points (instead of 200)</li>
+                            <li>$10 gift cards: 500 points (instead of 1000)</li>
+                            <li>Exclusive Fire Tier badge and recognition</li>
+                        </ul>
+                        <div class="tier-progress">
+                            <span class="progress-text">${pointsUntilFireTier.toLocaleString()} points until Fire Tier</span>
+                            <div class="progress-bar fire-progress">
+                                <div class="progress-fill fire-fill" style="width: ${(totalPoints / 10000) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                html += `<div class="tier-card tier-fire active">
+                    <div class="tier-header">
+                        <div class="tier-icon">🔥</div>
+                        <div class="tier-info">
+                            <h4 class="tier-title">Fire Tier - ACTIVE</h4>
+                            <p class="tier-points">Enjoy 50% off all rewards!</p>
+                        </div>
+                    </div>
+                    <div class="tier-rewards">
+                        <p class="tier-benefit">🔥 <strong>Your Fire Tier Benefits:</strong></p>
+                        <ul class="fire-benefits">
+                            <li>✅ All gift card rewards cost <strong>50% less</strong> for the entire year!</li>
+                            <li>✅ $5 gift cards: 100 points (instead of 200)</li>
+                            <li>✅ $10 gift cards: 500 points (instead of 1000)</li>
+                            <li>✅ Exclusive Fire Tier badge and recognition</li>
+                        </ul>
+                    </div>
+                </div>`;
+            }
+            
+            html += '</div></div>';
             
             // Streaks Section - convert object to array format
             let streaksArray = [];
