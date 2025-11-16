@@ -1664,6 +1664,12 @@ body.menu-open {
     transform: scale(1.05);
 }
 
+.action-btn-small {
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
 .action-status {
     font-size: 0.9rem;
     color: #888;

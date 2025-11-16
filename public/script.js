@@ -626,7 +626,13 @@ async function toggleAttendance(eventId, currentlyAttending) {
                 const data = await response.json();
                 if (data.data && data.data.rewards) {
                     const points = data.data.rewards.pointsEarned || 0;
-                    updateEventsStatus(`✓ Attended! Earned ${points} points`);
+                    const totalPoints = data.data.rewards.totalPoints || 0;
+                    const streak = data.data.rewards.streakLength || 0;
+                    updateEventsStatus(`✓ Attended! Earned ${points} points (${streak} day streak) | Total: ${totalPoints} pts`);
+                    // Refresh rewards display
+                    if (window.location.pathname === '/rewards.html' && typeof loadRewardsData === 'function') {
+                        setTimeout(loadRewardsData, 500);
+                    }
                 } else {
                     updateEventsStatus('✓ Event attendance logged');
                 }
@@ -672,8 +678,13 @@ async function logActivity(activityType) {
             const data = await response.json();
             if (data.data && data.data.rewards) {
                 const points = data.data.rewards.pointsEarned || 0;
+                const totalPoints = data.data.rewards.totalPoints || 0;
                 const streak = data.data.rewards.streakLength || 0;
-                updateActivityStatus(`✓ ${activityType} logged! +${points} points (${streak} day streak)`);
+                updateActivityStatus(`✓ ${activityType} logged! +${points} points (${streak} day streak) | Total: ${totalPoints} pts`);
+                // Refresh rewards display
+                if (window.location.pathname === '/rewards.html' && typeof loadRewardsData === 'function') {
+                    setTimeout(loadRewardsData, 500);
+                }
             } else {
                 updateActivityStatus(`✓ ${activityType} activity logged!`);
             }
@@ -714,9 +725,14 @@ async function logClassAttendance() {
             const data = await response.json();
             if (data.data && data.data.rewards) {
                 const points = data.data.rewards.pointsEarned || 0;
+                const totalPoints = data.data.rewards.totalPoints || 0;
                 const streak = data.data.rewards.streakLength || 0;
                 const percentage = data.data.percentage || 0;
-                updateClassStatus(`✓ Logged! +${points} points | ${percentage.toFixed(0)}% attendance | ${streak} day streak`);
+                updateClassStatus(`✓ Logged! +${points} points | ${percentage.toFixed(0)}% attendance | ${streak} day streak | Total: ${totalPoints} pts`);
+                // Refresh rewards display
+                if (window.location.pathname === '/rewards.html' && typeof loadRewardsData === 'function') {
+                    setTimeout(loadRewardsData, 500);
+                }
             } else {
                 updateClassStatus(`✓ Class attendance logged for today`);
             }
@@ -771,6 +787,59 @@ async function setTotalClassDays() {
     } catch (error) {
         console.error('Error setting total days:', error);
         updateClassStatus('Error: Please try again');
+    }
+}
+
+// Check budget and award points
+async function checkBudgetRewards() {
+    try {
+        const userId = defaultUserId;
+        const statusEl = document.getElementById('budget-status');
+        if (statusEl) {
+            statusEl.textContent = 'Checking...';
+            statusEl.style.color = '#888';
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/budgets/check-rewards/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const pointsEarned = data.data?.pointsEarned || 0;
+            const totalPoints = data.data?.totalPoints || 0;
+            
+            if (pointsEarned > 0) {
+                updateBudgetStatus(`✓ Earned ${pointsEarned} points for staying under budget! | Total: ${totalPoints} pts`);
+                // Refresh rewards display
+                if (window.location.pathname === '/rewards.html' && typeof loadRewardsData === 'function') {
+                    setTimeout(loadRewardsData, 500);
+                }
+            } else {
+                updateBudgetStatus(`No new rewards (already earned or over budget) | Total: ${totalPoints} pts`);
+            }
+        } else {
+            updateBudgetStatus('Failed to check budget');
+        }
+    } catch (error) {
+        console.error('Error checking budget rewards:', error);
+        updateBudgetStatus('Error: Please try again');
+    }
+}
+
+// Update budget status message
+function updateBudgetStatus(message) {
+    const statusEl = document.getElementById('budget-status');
+    if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.style.color = message.includes('✓') ? '#4CAF50' : '#ff4444';
+        setTimeout(() => {
+            statusEl.textContent = 'Check your spending';
+            statusEl.style.color = '#888';
+        }, 5000);
     }
 }
 

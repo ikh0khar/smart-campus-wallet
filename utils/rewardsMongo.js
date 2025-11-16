@@ -158,14 +158,25 @@ async function checkBudgetAchievement(userId, budgetProgress) {
   return null;
 }
 
-// Award points for attending academic events
+// Award points for attending events
 async function awardEventPoints(userId, event) {
+  // Academic events get bonus points
   if (event.category === 'Academic') {
     return await awardAchievement(userId, `ACADEMIC_EVENT_${event.eventId}`, ACHIEVEMENT_POINTS.ACADEMIC_EVENT);
   }
-  if (event.cost === 0 || event.cost === '0') {
+  
+  // Paid events get more points than free events
+  const eventCost = parseFloat(event.cost) || 0;
+  if (eventCost > 0) {
+    // Paid events: Award 25 points (more than free events)
+    return await awardAchievement(userId, `PAID_EVENT_${event.eventId}`, 25);
+  }
+  
+  // Free events get standard points
+  if (eventCost === 0 || event.cost === '0') {
     return await awardAchievement(userId, `FREE_EVENT_${event.eventId}`, ACHIEVEMENT_POINTS.FREE_EVENT);
   }
+  
   return null;
 }
 
