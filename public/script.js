@@ -71,8 +71,8 @@ async function initializeAPIIntegration() {
         loadBudgetingData();
     }
     
-    // Only load rewards if on homepage
-    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+    // Only load rewards if on rewards page
+    if (window.location.pathname === '/rewards.html') {
         loadRewardsData();
     }
     
@@ -390,40 +390,99 @@ async function loadRewardsData() {
     if (!contentDiv) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/rewards/summary`);
+        const defaultUserId = 'user123';
+        
+        // Fetch rewards summary with userId
+        const response = await fetch(`${API_BASE_URL}/rewards/summary/${defaultUserId}`);
         const data = await response.json();
         
         if (data.success && data.data) {
             let html = '<div class="rewards-dashboard">';
             
-            // Points display
-            if (data.data.points !== undefined) {
-                html += `<div class="points-display"><h3>Total Points</h3><p class="points-value">${data.data.points.toLocaleString()}</p></div>`;
-            }
+            // Points Hero Section
+            const totalPoints = data.data.points || 0;
+            html += `<div class="points-hero">
+                <div class="points-icon">🏆</div>
+                <div class="points-content">
+                    <h3 class="points-label">Total Reward Points</h3>
+                    <p class="points-value">${totalPoints.toLocaleString()}</p>
+                    <div class="points-subtitle">Keep earning points for your activities!</div>
+                </div>
+            </div>`;
             
-            // Streaks
+            // Streaks Section
             if (data.data.streaks && data.data.streaks.length > 0) {
-                html += '<div class="streaks-display"><h3>Streaks</h3><ul class="streaks-list">';
+                html += '<div class="rewards-section"><h3 class="section-subtitle">Active Streaks</h3>';
+                html += '<div class="streaks-grid">';
                 data.data.streaks.forEach(streak => {
-                    html += `<li><span class="streak-type">${streak.type || 'Streak'}</span> <span class="streak-days">${streak.current || 0} days</span></li>`;
+                    const streakType = streak.type || 'streak';
+                    const current = streak.current || 0;
+                    const longest = streak.longest || 0;
+                    const streakName = streakType.charAt(0).toUpperCase() + streakType.slice(1).replace(/([A-Z])/g, ' $1');
+                    
+                    html += `<div class="streak-card">
+                        <div class="streak-icon">🔥</div>
+                        <div class="streak-content">
+                            <h4 class="streak-name">${streakName}</h4>
+                            <div class="streak-stats">
+                                <div class="streak-current">
+                                    <span class="streak-number">${current}</span>
+                                    <span class="streak-label">Current</span>
+                                </div>
+                                <div class="streak-longest">
+                                    <span class="streak-number">${longest}</span>
+                                    <span class="streak-label">Longest</span>
+                                </div>
+                            </div>
+                            ${current > 0 ? '<div class="streak-fire">Keep the fire going! 🔥</div>' : ''}
+                        </div>
+                    </div>`;
                 });
-                html += '</ul></div>';
+                html += '</div></div>';
+            } else {
+                html += '<div class="rewards-section"><h3 class="section-subtitle">Active Streaks</h3>';
+                html += '<div class="no-streaks">Start building your streaks by attending events and activities!</div></div>';
             }
             
-            // Achievements
+            // Achievements Section
             if (data.data.achievements && data.data.achievements.length > 0) {
-                html += '<div class="achievements-display"><h3>Achievements</h3><ul class="achievements-list">';
-                data.data.achievements.slice(0, 5).forEach(ach => {
-                    html += `<li><span class="ach-name">${ach.name || ach.achievementId || 'Achievement'}</span> <span class="ach-points">+${ach.points || 0} pts</span></li>`;
+                html += '<div class="rewards-section"><h3 class="section-subtitle">Achievements</h3>';
+                html += '<div class="achievements-grid">';
+                data.data.achievements.forEach(ach => {
+                    const achName = ach.name || ach.achievementId || 'Achievement';
+                    const points = ach.points || 0;
+                    const earnedDate = ach.earnedAt ? new Date(ach.earnedAt).toLocaleDateString() : '';
+                    
+                    html += `<div class="achievement-card">
+                        <div class="achievement-icon">🏅</div>
+                        <div class="achievement-content">
+                            <h4 class="achievement-name">${achName}</h4>
+                            <div class="achievement-points">+${points} points</div>
+                            ${earnedDate ? `<div class="achievement-date">Earned: ${earnedDate}</div>` : ''}
+                        </div>
+                    </div>`;
                 });
-                html += '</ul></div>';
+                html += '</div></div>';
+            } else {
+                html += '<div class="rewards-section"><h3 class="section-subtitle">Achievements</h3>';
+                html += '<div class="no-achievements">Complete activities and events to unlock achievements!</div></div>';
             }
+            
+            // Rewards Info Section
+            html += '<div class="rewards-info-section">';
+            html += '<h3 class="section-subtitle">How to Earn Points</h3>';
+            html += '<div class="info-cards">';
+            html += '<div class="info-card"><div class="info-icon">📅</div><div class="info-text"><strong>Attend Events</strong><br>Earn points for every campus event you attend</div></div>';
+            html += '<div class="info-card"><div class="info-icon">🎓</div><div class="info-text"><strong>Class Attendance</strong><br>Build streaks for consistent class attendance</div></div>';
+            html += '<div class="info-card"><div class="info-icon">💪</div><div class="info-text"><strong>Physical Activities</strong><br>Log gym sessions, sports, walks, and runs</div></div>';
+            html += '<div class="info-card"><div class="info-icon">💰</div><div class="info-text"><strong>Stay Under Budget</strong><br>Rewards for smart spending habits</div></div>';
+            html += '</div></div>';
             
             html += '</div>';
             contentDiv.innerHTML = html;
             console.log('✅ Rewards data loaded and displayed');
         } else {
-            contentDiv.innerHTML = '<div class="no-data">No rewards data available yet.</div>';
+            contentDiv.innerHTML = '<div class="no-data">No rewards data available yet. Start participating to earn points!</div>';
         }
     } catch (error) {
         console.error('❌ Rewards API Error:', error);
