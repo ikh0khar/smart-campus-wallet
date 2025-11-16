@@ -1,9 +1,17 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const connectDB = require('./config/database');
 const transactionsRouter = require('./routes/transactions');
 const budgetsRouter = require('./routes/budgets');
 
 const app = express();
+
+// Connect to MongoDB
+connectDB().catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1);
+});
 
 // Middleware
 // CORS configuration - allows requests from any origin (for development)

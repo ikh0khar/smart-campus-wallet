@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const sampleBudgets = require('../data/sampleBudgets');
-const { getTransactions } = require('../data/loadSampleData');
+const { Budget, Transaction } = require('../models');
 
 // Category mapping from CSV to our API format
 const categoryMap = {
@@ -16,50 +15,106 @@ const normalizeCategory = (category) => {
   return categoryMap[lower] || lower;
 };
 
-// Helper to calculate spent amount for a budget
-const calculateSpent = (budget, transactions) => {
+// Helper to calculate spent amount for a budget from MongoDB
+const calculateSpent = async (budget, transactions = null) => {
   const startDate = new Date(budget.startDate);
   const endDate = new Date(budget.endDate);
+  
+  // Build query for transactions matching budget criteria
+  const query = {
+    date: {
+      $gte: startDate,
+      $lte: endDate
+    }
+  };
 
-  return transactions
-    .filter(t => {
-      const tDate = new Date(t.date);
-      const normalizedCategory = normalizeCategory(t.category);
-      return normalizedCategory === budget.category &&
-             tDate >= startDate &&
-             tDate <= endDate;
-    })
-    .reduce((sum, t) => sum + t.amount, 0);
+  // Match category - check both original and normalized
+  const normalizedCategory = normalizeCategory(budget.category);
+  const originalCategories = Object.keys(categoryMap).filter(k => categoryMap[k] === normalizedCategory);
+  
+  if (originalCategories.length > 0) {
+    // Check both original categories (Dining, Transport, etc.) and normalized (food, transportation, etc.)
+    query.category = {
+      $in: [
+        new RegExp(`^${budget.category}$`, 'i'),
+        ...originalCategories.map(c => new RegExp(`^${c}$`, 'i'))
+      ]
+    };
+  } else {
+    query.category = new RegExp(`^${budget.category}$`, 'i');
+  }
+
+  // Filter by userId if budget has userId
+  if (budget.userId) {
+    query.userId = budget.userId;
+  }
+
+  // Use provided transactions or query from database
+  if (transactions) {
+    return transactions
+      .filter(t => {
+        const tDate = new Date(t.date);
+        const normalizedCategory = normalizeCategory(t.category);
+        return normalizedCategory === budget.category &&
+               tDate >= startDate &&
+               tDate <= endDate;
+      })
+      .reduce((sum, t) => sum + t.amount, 0);
+  }
+
+  // Query from MongoDB
+  const matchingTransactions = await Transaction.aggregate([
+    { $match: query },
+    { $group: { _id: null, total: { $sum: '$amount' } } }
+  ]);
+
+  return matchingTransactions.length > 0 ? matchingTransactions[0].total : 0;
 };
 
 // @route   GET /api/budgets
 // @desc    Get all budgets for user
 // @access  Public
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const { isActive } = req.query;
-    let budgets = [...sampleBudgets];
-
+    const { isActive, userId } = req.query;
+    
+    // Build query
+    const query = {};
     if (isActive !== undefined) {
-      budgets = budgets.filter(b => b.isActive === (isActive === 'true'));
+      query.isActive = isActive === 'true';
+    }
+    if (userId) {
+      query.userId = userId;
     }
 
-    // Calculate current spent amounts
-    const transactions = getTransactions();
-    const budgetsWithProgress = budgets.map(budget => {
-      const spent = calculateSpent(budget, transactions);
-      const remaining = budget.amount - spent;
-      const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
-      const status = percentage >= 100 ? 'exceeded' : percentage >= 80 ? 'warning' : 'good';
+    // Get budgets from MongoDB
+    const budgets = await Budget.find(query).lean();
 
-      return {
-        ...budget,
-        spent: parseFloat(spent.toFixed(2)),
-        remaining: parseFloat(remaining.toFixed(2)),
-        percentage: parseFloat(percentage.toFixed(2)),
-        status,
-      };
-    });
+    // Calculate spent amounts for each budget
+    const budgetsWithProgress = await Promise.all(
+      budgets.map(async (budget) => {
+        const spent = await calculateSpent(budget);
+        const remaining = budget.amount - spent;
+        const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
+        const status = percentage >= 100 ? 'exceeded' : percentage >= 80 ? 'warning' : 'good';
+
+        return {
+          id: budget._id.toString(),
+          userId: budget.userId,
+          name: budget.name,
+          category: normalizeCategory(budget.category),
+          amount: budget.amount,
+          period: budget.period,
+          startDate: budget.startDate.toISOString().split('T')[0],
+          endDate: budget.endDate.toISOString().split('T')[0],
+          isActive: budget.isActive,
+          spent: parseFloat(spent.toFixed(2)),
+          remaining: parseFloat(remaining.toFixed(2)),
+          percentage: parseFloat(percentage.toFixed(2)),
+          status,
+        };
+      })
+    );
 
     res.json({
       success: true,
@@ -78,9 +133,9 @@ router.get('/', (req, res) => {
 // @route   GET /api/budgets/:id
 // @desc    Get single budget
 // @access  Public
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const budget = sampleBudgets.find(b => b.id === parseInt(req.params.id));
+    const budget = await Budget.findById(req.params.id);
 
     if (!budget) {
       return res.status(404).json({
@@ -89,8 +144,7 @@ router.get('/:id', (req, res) => {
       });
     }
 
-    const transactions = getTransactions();
-    const spent = calculateSpent(budget, transactions);
+    const spent = await calculateSpent(budget);
     const remaining = budget.amount - spent;
     const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
     const status = percentage >= 100 ? 'exceeded' : percentage >= 80 ? 'warning' : 'good';
@@ -98,7 +152,15 @@ router.get('/:id', (req, res) => {
     res.json({
       success: true,
       data: {
-        ...budget,
+        id: budget._id.toString(),
+        userId: budget.userId,
+        name: budget.name,
+        category: normalizeCategory(budget.category),
+        amount: budget.amount,
+        period: budget.period,
+        startDate: budget.startDate.toISOString().split('T')[0],
+        endDate: budget.endDate.toISOString().split('T')[0],
+        isActive: budget.isActive,
         spent: parseFloat(spent.toFixed(2)),
         remaining: parseFloat(remaining.toFixed(2)),
         percentage: parseFloat(percentage.toFixed(2)),
@@ -117,9 +179,9 @@ router.get('/:id', (req, res) => {
 // @route   GET /api/budgets/:id/progress
 // @desc    Get detailed budget progress (chart-friendly)
 // @access  Public
-router.get('/:id/progress', (req, res) => {
+router.get('/:id/progress', async (req, res) => {
   try {
-    const budget = sampleBudgets.find(b => b.id === parseInt(req.params.id));
+    const budget = await Budget.findById(req.params.id);
 
     if (!budget) {
       return res.status(404).json({
@@ -128,25 +190,32 @@ router.get('/:id/progress', (req, res) => {
       });
     }
 
-    const transactions = getTransactions();
-    const spent = calculateSpent(budget, transactions);
+    const spent = await calculateSpent(budget);
     const remaining = budget.amount - spent;
     const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
     const status = percentage >= 100 ? 'exceeded' : percentage >= 80 ? 'warning' : 'good';
 
     // Format for progress charts
     const progressData = [
-      { label: 'Spent', value: parseFloat(spent.toFixed(2)), color: status === 'exceeded' ? '#ef4444' : status === 'warning' ? '#f59e0b' : '#10b981' },
-      { label: 'Remaining', value: parseFloat(Math.max(0, remaining).toFixed(2)), color: '#e5e7eb' },
+      { 
+        label: 'Spent', 
+        value: parseFloat(spent.toFixed(2)), 
+        color: status === 'exceeded' ? '#ef4444' : status === 'warning' ? '#f59e0b' : '#10b981' 
+      },
+      { 
+        label: 'Remaining', 
+        value: parseFloat(Math.max(0, remaining).toFixed(2)), 
+        color: '#e5e7eb' 
+      },
     ];
 
     res.json({
       success: true,
       data: {
         budget: {
-          id: budget.id,
+          id: budget._id.toString(),
           name: budget.name,
-          category: budget.category,
+          category: normalizeCategory(budget.category),
           amount: budget.amount,
           period: budget.period,
         },
@@ -171,30 +240,49 @@ router.get('/:id/progress', (req, res) => {
 // @route   GET /api/budgets/alerts
 // @desc    Get budgets that need attention (close to or over limit)
 // @access  Public
-router.get('/alerts', (req, res) => {
+router.get('/alerts', async (req, res) => {
   try {
-    const { threshold = 80 } = req.query; // Default 80% threshold
+    const { threshold = 80, userId } = req.query; // Default 80% threshold
 
-    const alerts = sampleBudgets
-      .filter(b => b.isActive)
-      .map(budget => {
-        const transactions = getTransactions();
-    const spent = calculateSpent(budget, transactions);
+    // Build query
+    const query = { isActive: true };
+    if (userId) {
+      query.userId = userId;
+    }
+
+    const budgets = await Budget.find(query).lean();
+
+    // Calculate spent amounts and filter by threshold
+    const alerts = await Promise.all(
+      budgets.map(async (budget) => {
+        const spent = await calculateSpent(budget);
         const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
         return {
-          ...budget,
+          id: budget._id.toString(),
+          userId: budget.userId,
+          name: budget.name,
+          category: normalizeCategory(budget.category),
+          amount: budget.amount,
+          period: budget.period,
+          startDate: budget.startDate.toISOString().split('T')[0],
+          endDate: budget.endDate.toISOString().split('T')[0],
+          isActive: budget.isActive,
           spent: parseFloat(spent.toFixed(2)),
           percentage: parseFloat(percentage.toFixed(2)),
         };
       })
-      .filter(b => b.percentage >= threshold)
+    );
+
+    // Filter by threshold and sort
+    const filteredAlerts = alerts
+      .filter(b => b.percentage >= parseFloat(threshold))
       .sort((a, b) => b.percentage - a.percentage);
 
     res.json({
       success: true,
-      count: alerts.length,
+      count: filteredAlerts.length,
       threshold: parseFloat(threshold),
-      data: alerts,
+      data: filteredAlerts,
     });
   } catch (error) {
     console.error('Get budget alerts error:', error);
@@ -206,11 +294,11 @@ router.get('/alerts', (req, res) => {
 });
 
 // @route   POST /api/budgets
-// @desc    Create a new budget (mock - will be replaced with database)
+// @desc    Create a new budget
 // @access  Public
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const { name, category, amount, period, startDate, endDate } = req.body;
+    const { name, category, amount, period, startDate, endDate, userId } = req.body;
 
     // Validation
     if (!name || !category || !amount || !period || !startDate || !endDate) {
@@ -220,25 +308,44 @@ router.post('/', (req, res) => {
       });
     }
 
-    const newBudget = {
-      id: sampleBudgets.length + 1,
-      userId: 1, // Mock user ID
+    // Create budget in MongoDB
+    const newBudget = new Budget({
+      userId: userId || 'U001', // Default to U001 if not provided
       name,
       category,
       amount: parseFloat(amount),
       period,
-      startDate,
-      endDate,
-      spent: 0,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
       isActive: true,
-    };
+    });
 
-    // In real app, save to database
-    // For now, just return the created budget
+    await newBudget.save();
+
+    // Calculate spent amount
+    const spent = await calculateSpent(newBudget);
+    const remaining = newBudget.amount - spent;
+    const percentage = newBudget.amount > 0 ? (spent / newBudget.amount) * 100 : 0;
+    const status = percentage >= 100 ? 'exceeded' : percentage >= 80 ? 'warning' : 'good';
+
     res.status(201).json({
       success: true,
-      data: newBudget,
-      message: 'Budget created (mock - not persisted)',
+      data: {
+        id: newBudget._id.toString(),
+        userId: newBudget.userId,
+        name: newBudget.name,
+        category: normalizeCategory(newBudget.category),
+        amount: newBudget.amount,
+        period: newBudget.period,
+        startDate: newBudget.startDate.toISOString().split('T')[0],
+        endDate: newBudget.endDate.toISOString().split('T')[0],
+        isActive: newBudget.isActive,
+        spent: parseFloat(spent.toFixed(2)),
+        remaining: parseFloat(remaining.toFixed(2)),
+        percentage: parseFloat(percentage.toFixed(2)),
+        status,
+      },
+      message: 'Budget created successfully',
     });
   } catch (error) {
     console.error('Create budget error:', error);
@@ -250,4 +357,3 @@ router.post('/', (req, res) => {
 });
 
 module.exports = router;
-

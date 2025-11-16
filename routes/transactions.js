@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getTransactions } = require('../data/loadSampleData');
+const { Transaction } = require('../models');
 
 // Category mapping from CSV to our API format
 const categoryMap = {
@@ -16,72 +16,75 @@ const normalizeCategory = (category) => {
   return categoryMap[lower] || lower;
 };
 
-// Helper function to filter transactions
-const filterTransactions = (transactions, filters) => {
-  let filtered = [...transactions];
-
-  if (filters.category) {
-    filtered = filtered.filter(t => normalizeCategory(t.category) === filters.category);
-  }
-
-  if (filters.startDate) {
-    filtered = filtered.filter(t => new Date(t.date) >= new Date(filters.startDate));
-  }
-
-  if (filters.endDate) {
-    filtered = filtered.filter(t => new Date(t.date) <= new Date(filters.endDate));
-  }
-
-  if (filters.minAmount) {
-    filtered = filtered.filter(t => t.amount >= parseFloat(filters.minAmount));
-  }
-
-  if (filters.maxAmount) {
-    filtered = filtered.filter(t => t.amount <= parseFloat(filters.maxAmount));
-  }
-
-  return filtered;
-};
-
 // @route   GET /api/transactions
 // @desc    Get all transactions with optional filters
 // @access  Public
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { category, startDate, endDate, minAmount, maxAmount, userId, sortBy = 'date', sortOrder = 'desc' } = req.query;
 
-    let transactions = getTransactions();
-    
-    // Filter by userId if provided
+    // Build MongoDB query
+    const query = {};
+
     if (userId) {
-      transactions = transactions.filter(t => t.userId === userId);
+      query.userId = userId;
     }
-    
-    transactions = filterTransactions(transactions, {
-      category,
-      startDate,
-      endDate,
-      minAmount,
-      maxAmount,
-    });
 
-    // Normalize categories in response
-    transactions = transactions.map(t => ({
-      ...t,
-      category: normalizeCategory(t.category),
-    }));
-
-    // Sort transactions
-    transactions.sort((a, b) => {
-      const aValue = sortBy === 'date' ? new Date(a.date) : a[sortBy];
-      const bValue = sortBy === 'date' ? new Date(b.date) : b[sortBy];
-
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
+    // Handle category filter - need to check both original and normalized
+    if (category) {
+      const normalized = normalizeCategory(category);
+      // Check if category matches any of the mapped values
+      const originalCategories = Object.keys(categoryMap).filter(k => categoryMap[k] === normalized);
+      if (originalCategories.length > 0) {
+        query.category = { $in: [new RegExp(`^${category}$`, 'i'), ...originalCategories.map(c => new RegExp(`^${c}$`, 'i'))] };
       } else {
-        return aValue < bValue ? 1 : -1;
+        query.category = new RegExp(`^${category}$`, 'i');
       }
-    });
+    }
+
+    // Date range filter
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) {
+        query.date.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        query.date.$lte = new Date(endDate);
+      }
+    }
+
+    // Amount range filter
+    if (minAmount || maxAmount) {
+      query.amount = {};
+      if (minAmount) {
+        query.amount.$gte = parseFloat(minAmount);
+      }
+      if (maxAmount) {
+        query.amount.$lte = parseFloat(maxAmount);
+      }
+    }
+
+    // Build sort object
+    const sort = {};
+    const sortField = sortBy === 'date' ? 'date' : sortBy === 'amount' ? 'amount' : 'date';
+    sort[sortField] = sortOrder === 'asc' ? 1 : -1;
+
+    // Execute query
+    let transactions = await Transaction.find(query).sort(sort).lean();
+
+    // Normalize categories in response and transform to match API format
+    transactions = transactions.map(t => ({
+      id: t._id,
+      transactionId: t.transactionId,
+      userId: t.userId,
+      type: 'purchase',
+      amount: t.amount,
+      category: normalizeCategory(t.category),
+      description: t.merchant,
+      location: t.location,
+      paymentMethod: t.paymentMethod,
+      date: t.date.toISOString(),
+    }));
 
     res.json({
       success: true,
@@ -100,42 +103,55 @@ router.get('/', (req, res) => {
 // @route   GET /api/transactions/summary
 // @desc    Get spending summary (totals, averages, etc.)
 // @access  Public
-router.get('/summary', (req, res) => {
+router.get('/summary', async (req, res) => {
   try {
     const { startDate, endDate, userId } = req.query;
-    let transactions = getTransactions();
-    
+
+    // Build MongoDB query
+    const query = {};
     if (userId) {
-      transactions = transactions.filter(t => t.userId === userId);
+      query.userId = userId;
     }
-    
-    transactions = filterTransactions(transactions, { startDate, endDate });
-    
-    // Normalize categories
-    transactions = transactions.map(t => ({
-      ...t,
-      category: normalizeCategory(t.category),
-    }));
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) {
+        query.date.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        query.date.$lte = new Date(endDate);
+      }
+    }
 
-    const total = transactions.reduce((sum, t) => sum + t.amount, 0);
-    const count = transactions.length;
-    const average = count > 0 ? total / count : 0;
+    // Use aggregation for summary
+    const summary = await Transaction.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$amount' },
+          count: { $sum: 1 },
+          average: { $avg: '$amount' }
+        }
+      }
+    ]);
 
-    // Calculate by time period if date range provided
+    const result = summary[0] || { total: 0, count: 0, average: 0 };
+
+    // Calculate time period
     const days = startDate && endDate
       ? Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) || 1
       : 30; // default to 30 days
 
-    const dailyAverage = total / days;
+    const dailyAverage = result.total / days;
     const weeklyAverage = dailyAverage * 7;
     const monthlyAverage = dailyAverage * 30;
 
     res.json({
       success: true,
       data: {
-        total,
-        count,
-        average,
+        total: parseFloat(result.total.toFixed(2)),
+        count: result.count,
+        average: parseFloat((result.average || 0).toFixed(2)),
         dailyAverage: parseFloat(dailyAverage.toFixed(2)),
         weeklyAverage: parseFloat(weeklyAverage.toFixed(2)),
         monthlyAverage: parseFloat(monthlyAverage.toFixed(2)),
@@ -154,38 +170,43 @@ router.get('/summary', (req, res) => {
 // @route   GET /api/transactions/categories
 // @desc    Get spending breakdown by category (chart-friendly format)
 // @access  Public
-router.get('/categories', (req, res) => {
+router.get('/categories', async (req, res) => {
   try {
     const { startDate, endDate, userId } = req.query;
-    let transactions = getTransactions();
-    
-    if (userId) {
-      transactions = transactions.filter(t => t.userId === userId);
-    }
-    
-    transactions = filterTransactions(transactions, { startDate, endDate });
-    
-    // Normalize categories
-    transactions = transactions.map(t => ({
-      ...t,
-      category: normalizeCategory(t.category),
-    }));
 
-    // Group by category
+    // Build MongoDB query
+    const query = {};
+    if (userId) {
+      query.userId = userId;
+    }
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) {
+        query.date.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        query.date.$lte = new Date(endDate);
+      }
+    }
+
+    // Get transactions and group by category
+    const transactions = await Transaction.find(query).lean();
+
+    // Normalize categories and group
     const categoryMap = {};
     transactions.forEach(transaction => {
-      const category = transaction.category;
-      if (!categoryMap[category]) {
-        categoryMap[category] = {
-          category,
+      const normalizedCategory = normalizeCategory(transaction.category);
+      if (!categoryMap[normalizedCategory]) {
+        categoryMap[normalizedCategory] = {
+          category: normalizedCategory,
           amount: 0,
           count: 0,
           transactions: [],
         };
       }
-      categoryMap[category].amount += transaction.amount;
-      categoryMap[category].count += 1;
-      categoryMap[category].transactions.push(transaction);
+      categoryMap[normalizedCategory].amount += transaction.amount;
+      categoryMap[normalizedCategory].count += 1;
+      categoryMap[normalizedCategory].transactions.push(transaction);
     });
 
     // Convert to array format (perfect for bar charts)
@@ -222,22 +243,27 @@ router.get('/categories', (req, res) => {
 // @route   GET /api/transactions/trends
 // @desc    Get spending trends over time (chart-friendly format)
 // @access  Public
-router.get('/trends', (req, res) => {
+router.get('/trends', async (req, res) => {
   try {
     const { period = 'daily', startDate, endDate, userId } = req.query;
-    let transactions = getTransactions();
-    
+
+    // Build MongoDB query
+    const query = {};
     if (userId) {
-      transactions = transactions.filter(t => t.userId === userId);
+      query.userId = userId;
     }
-    
-    transactions = filterTransactions(transactions, { startDate, endDate });
-    
-    // Normalize categories
-    transactions = transactions.map(t => ({
-      ...t,
-      category: normalizeCategory(t.category),
-    }));
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) {
+        query.date.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        query.date.$lte = new Date(endDate);
+      }
+    }
+
+    // Get transactions
+    const transactions = await Transaction.find(query).lean();
 
     // Group by time period
     const trendsMap = {};
@@ -294,4 +320,3 @@ router.get('/trends', (req, res) => {
 });
 
 module.exports = router;
-
