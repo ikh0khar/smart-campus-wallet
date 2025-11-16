@@ -1502,8 +1502,206 @@ body {
     font-weight: 500;
 }
 
+/* Add Transaction Form Styles */
+.add-transaction-section {
+    margin-bottom: 30px;
+}
+
+.toggle-form-btn {
+    width: 100%;
+    padding: 15px 24px;
+    background: linear-gradient(135deg, #bd3346 0%, #a02a3a 100%);
+    border: 2px solid #bd3346;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(189, 51, 70, 0.3);
+}
+
+.toggle-form-btn:hover {
+    background: linear-gradient(135deg, #a02a3a 0%, #bd3346 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(189, 51, 70, 0.4);
+}
+
+.toggle-form-btn span {
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1;
+}
+
+.transaction-form-container {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 30px;
+    margin-top: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.form-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.transaction-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #ccc;
+}
+
+.form-group input,
+.form-group select {
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #bd3346;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(189, 51, 70, 0.2);
+}
+
+.form-group input::placeholder {
+    color: #888;
+}
+
+.form-group select {
+    cursor: pointer;
+}
+
+.form-group select option {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.btn-cancel,
+.btn-submit {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid;
+}
+
+.btn-cancel {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ccc;
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #bd3346 0%, #a02a3a 100%);
+    border-color: #bd3346;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(189, 51, 70, 0.3);
+}
+
+.btn-submit:hover:not(:disabled) {
+    background: linear-gradient(135deg, #a02a3a 0%, #bd3346 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(189, 51, 70, 0.4);
+}
+
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.form-message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-top: 10px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.form-message.success {
+    background: rgba(76, 175, 80, 0.2);
+    border: 2px solid rgba(76, 175, 80, 0.4);
+    color: #4CAF50;
+}
+
+.form-message.error {
+    background: rgba(244, 67, 54, 0.2);
+    border: 2px solid rgba(244, 67, 54, 0.4);
+    color: #f44336;
+}
+
+.form-message.info {
+    background: rgba(33, 150, 243, 0.2);
+    border: 2px solid rgba(33, 150, 243, 0.4);
+    color: #2196F3;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-cancel,
+    .btn-submit {
+        width: 100%;
+    }
     .points-hero {
         flex-direction: column;
         text-align: center;

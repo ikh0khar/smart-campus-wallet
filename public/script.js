@@ -891,6 +891,124 @@ function updateClassStatus(message) {
 // Initialize summaryData
 window.summaryData = null;
 
+// Generate unique transaction ID
+function generateTransactionId() {
+    return 'TXN' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase();
+}
+
+// Toggle add transaction form
+function toggleAddTransactionForm() {
+    const formContainer = document.getElementById('transaction-form-container');
+    const toggleBtn = document.getElementById('toggle-form-btn');
+    
+    if (formContainer.style.display === 'none') {
+        formContainer.style.display = 'block';
+        toggleBtn.innerHTML = '<span>−</span> Cancel';
+        // Set today's date as default
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('tx-date').value = today;
+        // Focus on first input
+        setTimeout(() => document.getElementById('tx-merchant').focus(), 100);
+    } else {
+        formContainer.style.display = 'none';
+        toggleBtn.innerHTML = '<span>+</span> Add New Transaction';
+        // Reset form
+        document.getElementById('add-transaction-form').reset();
+        document.getElementById('form-message').textContent = '';
+        document.getElementById('form-message').className = 'form-message';
+    }
+}
+
+// Handle add transaction form submission
+async function handleAddTransaction(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formMessage = document.getElementById('form-message');
+    const submitBtn = form.querySelector('.btn-submit');
+    
+    // Get form values
+    const merchant = document.getElementById('tx-merchant').value.trim();
+    const amount = parseFloat(document.getElementById('tx-amount').value);
+    const category = document.getElementById('tx-category').value;
+    const paymentMethod = document.getElementById('tx-payment-method').value;
+    const location = document.getElementById('tx-location').value.trim();
+    const date = document.getElementById('tx-date').value;
+    
+    // Validate
+    if (!merchant || !amount || !category || !paymentMethod || !date) {
+        formMessage.textContent = 'Please fill in all required fields.';
+        formMessage.className = 'form-message error';
+        return;
+    }
+    
+    if (amount <= 0) {
+        formMessage.textContent = 'Amount must be greater than 0.';
+        formMessage.className = 'form-message error';
+        return;
+    }
+    
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding...';
+    formMessage.textContent = 'Adding transaction...';
+    formMessage.className = 'form-message info';
+    
+    try {
+        const defaultUserId = 'user123';
+        const transactionId = generateTransactionId();
+        
+        const response = await fetch(`${API_BASE_URL}/transactions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                transactionId: transactionId,
+                userId: defaultUserId,
+                merchant: merchant,
+                category: category,
+                amount: amount,
+                paymentMethod: paymentMethod,
+                location: location || '',
+                date: date
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            formMessage.textContent = `✓ Transaction added successfully! $${amount.toFixed(2)} at ${merchant}`;
+            formMessage.className = 'form-message success';
+            
+            // Reset form
+            form.reset();
+            // Set today's date again
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tx-date').value = today;
+            
+            // Reload budgeting data after a short delay
+            setTimeout(() => {
+                loadBudgetingData();
+                // Close form after 2 seconds
+                setTimeout(() => {
+                    toggleAddTransactionForm();
+                }, 2000);
+            }, 500);
+        } else {
+            formMessage.textContent = data.message || 'Failed to add transaction. Please try again.';
+            formMessage.className = 'form-message error';
+        }
+    } catch (error) {
+        console.error('Error adding transaction:', error);
+        formMessage.textContent = 'Error: Could not add transaction. Please check your connection.';
+        formMessage.className = 'form-message error';
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Transaction';
+    }
+}
+
 // Rewards API Integration
 async function loadRewardsData() {
     const contentDiv = document.getElementById('rewards-content');
