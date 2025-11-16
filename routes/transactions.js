@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Transaction } = require('../models');
+const { Transaction, User } = require('../models');
 
 // Category mapping from CSV to our API format
 const categoryMap = {
@@ -312,6 +312,283 @@ router.get('/trends', async (req, res) => {
     });
   } catch (error) {
     console.error('Get trends error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @route   GET /api/transactions/:id
+// @desc    Get single transaction by ID
+// @access  Public
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Try to find by MongoDB _id first, then by transactionId
+    let transaction = await Transaction.findById(id);
+    
+    if (!transaction) {
+      transaction = await Transaction.findOne({ transactionId: id });
+    }
+
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found',
+      });
+    }
+
+    const transactionData = {
+      id: transaction._id,
+      transactionId: transaction.transactionId,
+      userId: transaction.userId,
+      type: 'purchase',
+      amount: transaction.amount,
+      category: normalizeCategory(transaction.category),
+      description: transaction.merchant,
+      location: transaction.location,
+      paymentMethod: transaction.paymentMethod,
+      date: transaction.date.toISOString(),
+    };
+
+    res.json({
+      success: true,
+      data: transactionData,
+    });
+  } catch (error) {
+    console.error('Get transaction error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @route   POST /api/transactions
+// @desc    Create a new transaction
+// @access  Public
+router.post('/', async (req, res) => {
+  try {
+    const { transactionId, userId, merchant, category, amount, paymentMethod, location, date } = req.body;
+
+    // Validation
+    if (!transactionId || !userId || !merchant || !category || amount === undefined || !paymentMethod || !date) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: transactionId, userId, merchant, category, amount, paymentMethod, date',
+      });
+    }
+
+    if (amount < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount must be greater than or equal to 0',
+      });
+    }
+
+    // Check if transactionId already exists
+    const existing = await Transaction.findOne({ transactionId });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: 'Transaction with this transactionId already exists',
+      });
+    }
+
+    // Create transaction
+    const transaction = new Transaction({
+      transactionId,
+      userId,
+      merchant: merchant.trim(),
+      category: category.trim(),
+      amount: parseFloat(amount),
+      paymentMethod: paymentMethod.trim(),
+      location: location ? location.trim() : '',
+      date: new Date(date),
+    });
+
+    await transaction.save();
+
+    // Update user balance if user exists
+    try {
+      const user = await User.findOne({ userId });
+      if (user) {
+        user.balance = (user.balance || 0) - parseFloat(amount);
+        await user.save();
+      }
+    } catch (userError) {
+      console.warn('Could not update user balance:', userError.message);
+      // Don't fail the transaction creation if user update fails
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Transaction created successfully',
+      data: {
+        id: transaction._id,
+        transactionId: transaction.transactionId,
+        userId: transaction.userId,
+        type: 'purchase',
+        amount: transaction.amount,
+        category: normalizeCategory(transaction.category),
+        description: transaction.merchant,
+        location: transaction.location,
+        paymentMethod: transaction.paymentMethod,
+        date: transaction.date.toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error('Create transaction error:', error);
+    
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: 'Transaction with this transactionId already exists',
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @route   PUT /api/transactions/:id
+// @desc    Update an existing transaction
+// @access  Public
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { merchant, category, amount, paymentMethod, location, date } = req.body;
+
+    // Find transaction by MongoDB _id or transactionId
+    let transaction = await Transaction.findById(id);
+    
+    if (!transaction) {
+      transaction = await Transaction.findOne({ transactionId: id });
+    }
+
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found',
+      });
+    }
+
+    // Store original amount for user balance update
+    const originalAmount = transaction.amount;
+
+    // Update fields if provided
+    if (merchant !== undefined) transaction.merchant = merchant.trim();
+    if (category !== undefined) transaction.category = category.trim();
+    if (amount !== undefined) {
+      if (amount < 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Amount must be greater than or equal to 0',
+        });
+      }
+      transaction.amount = parseFloat(amount);
+    }
+    if (paymentMethod !== undefined) transaction.paymentMethod = paymentMethod.trim();
+    if (location !== undefined) transaction.location = location.trim();
+    if (date !== undefined) transaction.date = new Date(date);
+
+    await transaction.save();
+
+    // Update user balance if amount changed
+    if (amount !== undefined && amount !== originalAmount) {
+      try {
+        const user = await User.findOne({ userId: transaction.userId });
+        if (user) {
+          const difference = originalAmount - parseFloat(amount);
+          user.balance = (user.balance || 0) + difference;
+          await user.save();
+        }
+      } catch (userError) {
+        console.warn('Could not update user balance:', userError.message);
+        // Don't fail the transaction update if user update fails
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Transaction updated successfully',
+      data: {
+        id: transaction._id,
+        transactionId: transaction.transactionId,
+        userId: transaction.userId,
+        type: 'purchase',
+        amount: transaction.amount,
+        category: normalizeCategory(transaction.category),
+        description: transaction.merchant,
+        location: transaction.location,
+        paymentMethod: transaction.paymentMethod,
+        date: transaction.date.toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error('Update transaction error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
+// @route   DELETE /api/transactions/:id
+// @desc    Delete a transaction
+// @access  Public
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find transaction by MongoDB _id or transactionId
+    let transaction = await Transaction.findById(id);
+    
+    if (!transaction) {
+      transaction = await Transaction.findOne({ transactionId: id });
+    }
+
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found',
+      });
+    }
+
+    const transactionData = {
+      id: transaction._id,
+      transactionId: transaction.transactionId,
+      userId: transaction.userId,
+      amount: transaction.amount,
+    };
+
+    // Update user balance (add back the amount)
+    try {
+      const user = await User.findOne({ userId: transaction.userId });
+      if (user) {
+        user.balance = (user.balance || 0) + transaction.amount;
+        await user.save();
+      }
+    } catch (userError) {
+      console.warn('Could not update user balance:', userError.message);
+      // Don't fail the transaction deletion if user update fails
+    }
+
+    // Delete transaction
+    await Transaction.deleteOne({ _id: transaction._id });
+
+    res.json({
+      success: true,
+      message: 'Transaction deleted successfully',
+      data: transactionData,
+    });
+  } catch (error) {
+    console.error('Delete transaction error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
