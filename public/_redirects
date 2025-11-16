@@ -1,0 +1,14 @@
+# Netlify redirects file for SPA routing
+# This ensures all routes serve index.html for client-side routing
+
+# Redirect all non-file requests to index.html
+/*    /index.html   200
+
+# Specific page redirects
+/budgeting    /budgeting.html   200
+/activity     /activity.html    200
+/rewards      /rewards.html     200
+
+# Don't redirect API routes (they'll be handled by backend)
+/api/*    /api/:splat    404
+
