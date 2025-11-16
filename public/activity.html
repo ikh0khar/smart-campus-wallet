@@ -56,29 +56,6 @@
         <section class="content-section">
             <h2 class="section-title">My Activity</h2>
             
-            <!-- Filter Buttons -->
-            <div class="filter-container">
-                <div class="filter-row">
-                    <button class="filter-btn active" data-filter="all" onclick="filterEvents('all')">All Events</button>
-                    <button class="filter-btn" data-filter="free" onclick="filterEvents('free')">Free Only</button>
-                    <button class="filter-btn" data-filter="paid" onclick="filterEvents('paid')">Paid Events</button>
-                    <button class="filter-btn" data-filter="my" onclick="filterEvents('my')">My Events</button>
-                </div>
-                <div class="filter-row category-filters">
-                    <span class="filter-label">Category:</span>
-                    <button class="filter-btn category-btn active" data-category="all" onclick="filterByCategory('all')">All</button>
-                    <button class="filter-btn category-btn" data-category="Tech" onclick="filterByCategory('Tech')">Tech</button>
-                    <button class="filter-btn category-btn" data-category="Career" onclick="filterByCategory('Career')">Career</button>
-                    <button class="filter-btn category-btn" data-category="Wellness" onclick="filterByCategory('Wellness')">Wellness</button>
-                    <button class="filter-btn category-btn" data-category="Social" onclick="filterByCategory('Social')">Social</button>
-                    <button class="filter-btn category-btn" data-category="Academic" onclick="filterByCategory('Academic')">Academic</button>
-                    <button class="filter-btn category-btn" data-category="Finance" onclick="filterByCategory('Finance')">Finance</button>
-                    <button class="filter-btn category-btn" data-category="Sports" onclick="filterByCategory('Sports')">Sports</button>
-                    <button class="filter-btn category-btn" data-category="Cultural" onclick="filterByCategory('Cultural')">Cultural</button>
-                    <button class="filter-btn category-btn" data-category="Community" onclick="filterByCategory('Community')">Community</button>
-                </div>
-            </div>
-
             <!-- Activity Logging Section -->
             <div class="activity-logging-section">
                 <h3 class="section-subtitle">Log Your Activities</h3>
@@ -129,6 +106,29 @@
                         <a href="/budgeting.html" class="action-btn">View Budget</a>
                         <p class="action-status" id="budget-status">Check your spending</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="filter-container">
+                <div class="filter-row">
+                    <button class="filter-btn active" data-filter="all" onclick="filterEvents('all')">All Events</button>
+                    <button class="filter-btn" data-filter="free" onclick="filterEvents('free')">Free Only</button>
+                    <button class="filter-btn" data-filter="paid" onclick="filterEvents('paid')">Paid Events</button>
+                    <button class="filter-btn" data-filter="my" onclick="filterEvents('my')">My Events</button>
+                </div>
+                <div class="filter-row category-filters">
+                    <span class="filter-label">Category:</span>
+                    <button class="filter-btn category-btn active" data-category="all" onclick="filterByCategory('all')">All</button>
+                    <button class="filter-btn category-btn" data-category="Tech" onclick="filterByCategory('Tech')">Tech</button>
+                    <button class="filter-btn category-btn" data-category="Career" onclick="filterByCategory('Career')">Career</button>
+                    <button class="filter-btn category-btn" data-category="Wellness" onclick="filterByCategory('Wellness')">Wellness</button>
+                    <button class="filter-btn category-btn" data-category="Social" onclick="filterByCategory('Social')">Social</button>
+                    <button class="filter-btn category-btn" data-category="Academic" onclick="filterByCategory('Academic')">Academic</button>
+                    <button class="filter-btn category-btn" data-category="Finance" onclick="filterByCategory('Finance')">Finance</button>
+                    <button class="filter-btn category-btn" data-category="Sports" onclick="filterByCategory('Sports')">Sports</button>
+                    <button class="filter-btn category-btn" data-category="Cultural" onclick="filterByCategory('Cultural')">Cultural</button>
+                    <button class="filter-btn category-btn" data-category="Community" onclick="filterByCategory('Community')">Community</button>
                 </div>
             </div>
 
