@@ -1225,7 +1225,7 @@ async function loadRewardsData() {
                     </div>
                 </div>
                 <div class="tier-rewards">
-                    <p class="tier-merchants">Available at: Starbucks, Dunkin, Barnes & Noble, Amazon, Target, and more</p>
+                    <p class="tier-merchants">Available at: <strong>Dunkin</strong>, <strong>Starbucks</strong>, <strong>Target</strong>, <strong>CVS</strong>, and more</p>
                     ${available5Dollar > 0 
                         ? `<div class="tier-available">
                             <span class="available-count">${available5Dollar} voucher${available5Dollar > 1 ? 's' : ''} available!</span>
@@ -1251,7 +1251,7 @@ async function loadRewardsData() {
                     </div>
                 </div>
                 <div class="tier-rewards">
-                    <p class="tier-merchants">Available at: Starbucks, Dunkin, Barnes & Noble, Amazon, Target, and more</p>
+                    <p class="tier-merchants">Available at: <strong>Dunkin</strong>, <strong>Starbucks</strong>, <strong>Target</strong>, <strong>CVS</strong>, and more</p>
                     ${available10Dollar > 0 
                         ? `<div class="tier-available">
                             <span class="available-count">${available10Dollar} voucher${available10Dollar > 1 ? 's' : ''} available!</span>
@@ -1381,56 +1381,104 @@ async function loadRewardsData() {
                 html += '</div></div>';
             }
             
-            // Streaks Section - convert object to array format
-            let streaksArray = [];
+            // Streaks Section
             if (data.data.streaks) {
-                if (Array.isArray(data.data.streaks)) {
-                    streaksArray = data.data.streaks;
-                } else {
-                    // Convert object format to array
-                    Object.keys(data.data.streaks).forEach(key => {
-                        const streak = data.data.streaks[key];
-                        streaksArray.push({
-                            type: key,
-                            current: streak.current || streak.currentStreak || 0,
-                            longest: streak.longest || streak.longestStreak || 0
-                        });
-                    });
-                }
+                html += '<div class="rewards-section"><h3 class="section-subtitle">Your Streaks</h3>';
+                html += '<div class="streaks-container">';
+                
+                const streaks = data.data.streaks;
+                const today = new Date().toISOString().split('T')[0];
+                const isActiveToday = (lastDate) => lastDate === today;
+                
+                // Class Attendance Streak
+                const classStreak = streaks.classAttendance?.current || 0;
+                const classLastDate = streaks.classAttendance?.lastDate;
+                html += `<div class="streak-card ${isActiveToday(classLastDate) ? 'active' : ''}">
+                    <div class="streak-icon">🎓</div>
+                    <div class="streak-content">
+                        <h4 class="streak-title">Class Attendance</h4>
+                        <p class="streak-days">${classStreak} day${classStreak !== 1 ? 's' : ''} streak</p>
+                        <p class="streak-status">${isActiveToday(classLastDate) ? '✓ Active today' : 'Log today to continue'}</p>
+                    </div>
+                </div>`;
+                
+                // Activities Streak
+                const activitiesStreak = streaks.activities?.current || 0;
+                const activitiesLastDate = streaks.activities?.lastDate;
+                html += `<div class="streak-card ${isActiveToday(activitiesLastDate) ? 'active' : ''}">
+                    <div class="streak-icon">💪</div>
+                    <div class="streak-content">
+                        <h4 class="streak-title">Physical Activities</h4>
+                        <p class="streak-days">${activitiesStreak} day${activitiesStreak !== 1 ? 's' : ''} streak</p>
+                        <p class="streak-status">${isActiveToday(activitiesLastDate) ? '✓ Active today' : 'Log today to continue'}</p>
+                    </div>
+                </div>`;
+                
+                // Events Streak
+                const eventsStreak = streaks.events?.current || 0;
+                const eventsLastDate = streaks.events?.lastDate;
+                html += `<div class="streak-card ${isActiveToday(eventsLastDate) ? 'active' : ''}">
+                    <div class="streak-icon">📅</div>
+                    <div class="streak-content">
+                        <h4 class="streak-title">Events Attendance</h4>
+                        <p class="streak-days">${eventsStreak} day${eventsStreak !== 1 ? 's' : ''} streak</p>
+                        <p class="streak-status">${isActiveToday(eventsLastDate) ? '✓ Active today' : 'Attend an event today'}</p>
+                    </div>
+                </div>`;
+                
+                // App Usage Streak (signing in and using the app)
+                const appStreak = Math.max(classStreak, activitiesStreak, eventsStreak);
+                html += `<div class="streak-card ${appStreak > 0 ? 'active' : ''}">
+                    <div class="streak-icon">🔥</div>
+                    <div class="streak-content">
+                        <h4 class="streak-title">App Usage Streak</h4>
+                        <p class="streak-days">${appStreak} day${appStreak !== 1 ? 's' : ''} streak</p>
+                        <p class="streak-status">Keep using the app daily!</p>
+                    </div>
+                </div>`;
+                
+                html += '</div></div>';
             }
             
-            if (streaksArray.length > 0) {
-                html += '<div class="rewards-section"><h3 class="section-subtitle">Active Streaks</h3>';
-                html += '<div class="streaks-grid">';
-                streaksArray.forEach(streak => {
-                    const streakType = streak.type || 'streak';
-                    const current = streak.current || 0;
-                    const longest = streak.longest || 0;
-                    const streakName = streakType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
-                    
-                    html += `<div class="streak-card">
-                        <div class="streak-icon">🔥</div>
-                        <div class="streak-content">
-                            <h4 class="streak-name">${streakName}</h4>
-                            <div class="streak-stats">
-                                <div class="streak-current">
-                                    <span class="streak-number">${current}</span>
-                                    <span class="streak-label">Current</span>
-                                </div>
-                                <div class="streak-longest">
-                                    <span class="streak-number">${longest}</span>
-                                    <span class="streak-label">Longest</span>
-                                </div>
-                            </div>
-                            ${current > 0 ? '<div class="streak-fire">Keep the fire going! 🔥</div>' : ''}
-                        </div>
-                    </div>`;
-                });
-                html += '</div></div>';
-            } else {
-                html += '<div class="rewards-section"><h3 class="section-subtitle">Active Streaks</h3>';
-                html += '<div class="no-streaks">Start building your streaks by attending events and activities!</div></div>';
-            }
+            // Leaderboard Section
+            html += '<div class="rewards-section"><h3 class="section-subtitle">🏆 Leaderboard</h3>';
+            html += '<div class="leaderboard-container">';
+            html += '<table class="leaderboard-table">';
+            html += '<thead><tr><th>Rank</th><th>Name</th><th>Points</th><th>Tier</th></tr></thead>';
+            html += '<tbody>';
+            
+            // Fabricated leaderboard data
+            const leaderboardData = [
+                { name: 'Alex Chen', points: 12500, tier: '🔥 Fire' },
+                { name: 'Sarah Johnson', points: 9800, tier: 'Gold' },
+                { name: 'Michael Park', points: 8750, tier: 'Gold' },
+                { name: 'Emily Davis', points: 7200, tier: 'Silver' },
+                { name: 'David Kim', points: 6500, tier: 'Silver' },
+                { name: 'Jessica Martinez', points: 5800, tier: 'Silver' },
+                { name: 'Ryan Thompson', points: 4900, tier: 'Bronze' },
+                { name: 'Olivia Wilson', points: 4200, tier: 'Bronze' },
+                { name: 'James Brown', points: 3600, tier: 'Bronze' },
+                { name: 'Sophia Anderson', points: totalPoints, tier: isFireTier ? '🔥 Fire' : (totalPoints >= 5000 ? 'Gold' : totalPoints >= 3000 ? 'Silver' : 'Bronze') }
+            ];
+            
+            // Sort by points (descending)
+            leaderboardData.sort((a, b) => b.points - a.points);
+            
+            leaderboardData.forEach((user, index) => {
+                const rank = index + 1;
+                const isCurrentUser = user.name === 'Sophia Anderson';
+                const rowClass = isCurrentUser ? 'current-user' : '';
+                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+                
+                html += `<tr class="${rowClass}">
+                    <td class="rank-cell">${medal} ${rank}</td>
+                    <td class="name-cell">${user.name} ${isCurrentUser ? '<span class="you-badge">(You)</span>' : ''}</td>
+                    <td class="points-cell">${user.points.toLocaleString()}</td>
+                    <td class="tier-cell">${user.tier}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div></div>';
             
             // Achievements Section
             if (data.data.achievements && data.data.achievements.length > 0) {

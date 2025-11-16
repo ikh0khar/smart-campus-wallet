@@ -1305,6 +1305,38 @@
       "_id": "id_1763284421398_m8o48c0zt",
       "createdAt": "2025-11-16T09:13:41.398Z",
       "updatedAt": "2025-11-16T09:13:41.398Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "walk",
+      "date": "2025-11-16",
+      "_id": "id_1763284473230_lcn0sajpz",
+      "createdAt": "2025-11-16T09:14:33.230Z",
+      "updatedAt": "2025-11-16T09:14:33.230Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "run",
+      "date": "2025-11-16",
+      "_id": "id_1763284473785_3gc3cx8st",
+      "createdAt": "2025-11-16T09:14:33.785Z",
+      "updatedAt": "2025-11-16T09:14:33.785Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "sports",
+      "date": "2025-11-16",
+      "_id": "id_1763284474227_xutzpampd",
+      "createdAt": "2025-11-16T09:14:34.227Z",
+      "updatedAt": "2025-11-16T09:14:34.227Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763284474687_jlj2dblpe",
+      "createdAt": "2025-11-16T09:14:34.687Z",
+      "updatedAt": "2025-11-16T09:14:34.687Z"
     }
   ],
   "rewardPoints": [
@@ -1352,7 +1384,7 @@
       "lastDate": "2025-11-16",
       "_id": "id_1763283121793_ta9i0t09i",
       "createdAt": "2025-11-16T08:52:01.793Z",
-      "updatedAt": "2025-11-16T09:12:00.687Z"
+      "updatedAt": "2025-11-16T09:14:36.491Z"
     },
     {
       "userId": "U001",
@@ -1362,7 +1394,7 @@
       "lastDate": "2025-11-16",
       "_id": "id_1763284410939_gez97iivv",
       "createdAt": "2025-11-16T09:13:30.939Z",
-      "updatedAt": "2025-11-16T09:13:41.399Z"
+      "updatedAt": "2025-11-16T09:14:34.688Z"
     }
   ],
   "achievements": [
@@ -1513,6 +1545,6 @@
   ],
   "_meta": {
     "createdAt": "2025-11-16T07:28:48.253Z",
-    "lastModified": "2025-11-16T09:13:41.399Z"
+    "lastModified": "2025-11-16T09:14:37.151Z"
   }
 }
