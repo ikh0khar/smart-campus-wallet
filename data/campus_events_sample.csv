@@ -13,9 +13,17 @@ E011,Resume and LinkedIn Clinic,Career,Campus Center,2025-11-05 13:00,career,wor
 E012,Music on the Green,Social,Quad,2025-11-06 19:00,music,social,0
 E013,Campus Cleanup Day,Community,Quad,2025-11-02 10:00,community,volunteering,0
 E014,Intro to Personal Finance,Finance,Innovation Hub,2025-11-03 16:00,finance,students,0
-E015,Data Science Club Meetup,Tech,Innovation Hub,2025-11-07 18:00,data,ai,0
-E016,Movie Night,Social,Student Union,2025-11-08 20:00,film,social,0
-E017,Leadership Workshop,Academic,Business School Atrium,2025-11-01 12:00,leadership,skills,0
+E015,Data Science Club Meetup,Tech,Innovation Hub,2025-11-07 18:00,data,ai,5
+E016,Movie Night,Social,Student Union,2025-11-08 20:00,film,social,8
+E017,Leadership Workshop,Academic,Business School Atrium,2025-11-01 12:00,leadership,skills,12
 E018,Healthy Eating on a Budget,Wellness,Campus Center,2025-11-04 12:30,wellness,finance,0
 E019,Campus Job Fair,Career,Campus Center,2025-11-09 13:00,career,employment,0
 E020,Library Late Night Study,Academic,Library,2025-11-10 21:00,study,academic,0
+E021,Concert Series - Fall Edition,Social,Auditorium,2025-11-12 19:00,music,entertainment,20
+E022,Advanced Coding Bootcamp,Tech,Computer Lab,2025-11-13 14:00,programming,tech,25
+E023,Professional Photography Workshop,Arts,Studio,2025-11-14 10:00,photography,arts,15
+E024,Chef's Table Dining Experience,Social,Dining Hall,2025-11-15 18:30,food,dining,30
+E025,Adventure Sports Day,Sports,Outdoor Field,2025-11-16 09:00,sports,adventure,18
+E026,Investment Strategies Seminar,Finance,Business School,2025-11-17 16:00,finance,investment,22
+E027,Tech Startup Pitch Night,Tech,Innovation Hub,2025-11-18 17:00,startups,networking,10
+E028,Yoga & Meditation Retreat,Wellness,Wellness Center,2025-11-19 08:00,wellness,health,12

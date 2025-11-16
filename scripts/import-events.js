@@ -42,9 +42,39 @@ function parseCSV(content) {
     values.push(current.trim()); // Add last value
     
     const record = {};
+    
+    // Cost is always the last field (even if tags field was split by commas)
+    const costIndex = headers.indexOf('cost');
+    if (costIndex >= 0) {
+      // Cost is the last value in the values array
+      const costValue = values[values.length - 1] || values[costIndex] || '';
+      record['cost'] = costValue.trim().replace(/\r$/, '');
+    }
+    
+    // Tags field might have been split if it contains commas
+    const tagsIndex = headers.indexOf('tags');
+    if (tagsIndex >= 0 && values.length > tagsIndex) {
+      // If we have more values than expected, tags might have been split
+      if (values.length > costIndex + 1) {
+        // Reconstruct tags from all values between tags index and cost index
+        const tagsParts = [];
+        for (let i = tagsIndex; i < values.length - 1; i++) {
+          tagsParts.push(values[i].trim());
+        }
+        record['tags'] = tagsParts.join(',');
+      } else {
+        record['tags'] = (values[tagsIndex] || '').trim();
+      }
+    }
+    
+    // Parse other fields normally (skip cost and tags as they're already handled)
     headers.forEach((header, index) => {
+      const headerLower = header.toLowerCase();
+      if (headerLower === 'cost' || headerLower === 'tags') return; // Already handled
+      
       let value = values[index] || '';
-      record[header.toLowerCase()] = value.trim();
+      value = value.trim().replace(/^"|"$/g, '').replace(/\r$/, '');
+      record[headerLower] = value;
     });
     
     records.push(record);
@@ -113,8 +143,21 @@ async function importEvents(clearExisting = false) {
         }
         
         // Parse cost and determine if paid/free
-        const cost = parseFloat(row.cost) || 0;
+        // Handle both string and numeric cost values
+        let cost = 0;
+        if (row.cost !== undefined && row.cost !== null && row.cost !== '') {
+          const costStr = String(row.cost).trim().replace(/^"|"$/g, '').replace(/\r$/, '');
+          cost = parseFloat(costStr);
+          if (isNaN(cost)) {
+            cost = 0;
+          }
+        }
         const isPaid = cost > 0;
+        
+        // Debug: log paid events
+        if (isPaid) {
+          console.log(`  💰 Paid: ${row.name} - $${cost} (${row.category})`);
+        }
         
         // Parse tags
         const tags = row.tags ? row.tags.split(',').map(t => t.trim()).filter(t => t) : [];

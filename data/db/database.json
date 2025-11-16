@@ -594,7 +594,484 @@
     }
   ],
   "budgets": [],
-  "events": [],
+  "events": [
+    {
+      "eventId": "E001",
+      "name": "Tech and Innovation Mixer",
+      "category": "Tech",
+      "location": "Business School Atrium",
+      "startTime": "2025-11-05T17:00:00.000Z",
+      "tags": [
+        "tech",
+        "networking"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014848_rw5a4yy1z",
+      "createdAt": "2025-11-16T08:50:14.848Z",
+      "updatedAt": "2025-11-16T08:50:14.848Z"
+    },
+    {
+      "eventId": "E002",
+      "name": "Career Networking Night",
+      "category": "Career",
+      "location": "Campus Center",
+      "startTime": "2025-11-06T18:00:00.000Z",
+      "tags": [
+        "career",
+        "networking"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014848_b0v4zycs6",
+      "createdAt": "2025-11-16T08:50:14.848Z",
+      "updatedAt": "2025-11-16T08:50:14.848Z"
+    },
+    {
+      "eventId": "E003",
+      "name": "Financial Wellness Workshop",
+      "category": "Finance",
+      "location": "Innovation Hub",
+      "startTime": "2025-11-07T16:00:00.000Z",
+      "tags": [
+        "finance",
+        "wellness"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014848_jlncvaxly",
+      "createdAt": "2025-11-16T08:50:14.848Z",
+      "updatedAt": "2025-11-16T08:50:14.848Z"
+    },
+    {
+      "eventId": "E004",
+      "name": "HackFest Info Session",
+      "category": "Tech",
+      "location": "Innovation Hub",
+      "startTime": "2025-11-01T15:00:00.000Z",
+      "tags": [
+        "hackathon",
+        "ai"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014848_3hyf34oly",
+      "createdAt": "2025-11-16T08:50:14.848Z",
+      "updatedAt": "2025-11-16T08:50:14.848Z"
+    },
+    {
+      "eventId": "E005",
+      "name": "Study Skills Bootcamp",
+      "category": "Academic",
+      "location": "Library",
+      "startTime": "2025-11-08T11:00:00.000Z",
+      "tags": [
+        "academic",
+        "success"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014849_jalpxx8fo",
+      "createdAt": "2025-11-16T08:50:14.849Z",
+      "updatedAt": "2025-11-16T08:50:14.849Z"
+    },
+    {
+      "eventId": "E006",
+      "name": "Esports Tournament",
+      "category": "Sports",
+      "location": "Rec Center",
+      "startTime": "2025-11-09T19:00:00.000Z",
+      "tags": [
+        "gaming",
+        "competition"
+      ],
+      "cost": 5,
+      "isPaid": true,
+      "description": "$5.00",
+      "_id": "event_1763283014849_1vzyx2pjw",
+      "createdAt": "2025-11-16T08:50:14.849Z",
+      "updatedAt": "2025-11-16T08:50:14.849Z"
+    },
+    {
+      "eventId": "E007",
+      "name": "Yoga and Mindfulness",
+      "category": "Wellness",
+      "location": "Rec Center",
+      "startTime": "2025-11-03T08:00:00.000Z",
+      "tags": [
+        "wellness",
+        "health"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014849_g0kzedt17",
+      "createdAt": "2025-11-16T08:50:14.849Z",
+      "updatedAt": "2025-11-16T08:50:14.849Z"
+    },
+    {
+      "eventId": "E008",
+      "name": "Cultural Night",
+      "category": "Cultural",
+      "location": "Campus Center",
+      "startTime": "2025-11-09T18:00:00.000Z",
+      "tags": [
+        "culture",
+        "community"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014849_bgcu6td2s",
+      "createdAt": "2025-11-16T08:50:14.849Z",
+      "updatedAt": "2025-11-16T08:50:14.849Z"
+    },
+    {
+      "eventId": "E009",
+      "name": "Women in Tech Panel",
+      "category": "Tech",
+      "location": "Business School Atrium",
+      "startTime": "2025-11-04T17:30:00.000Z",
+      "tags": [
+        "tech",
+        "diversity"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014849_f822rrvmx",
+      "createdAt": "2025-11-16T08:50:14.849Z",
+      "updatedAt": "2025-11-16T08:50:14.849Z"
+    },
+    {
+      "eventId": "E010",
+      "name": "Entrepreneurship 101",
+      "category": "Career",
+      "location": "Innovation Hub",
+      "startTime": "2025-11-02T14:00:00.000Z",
+      "tags": [
+        "startups",
+        "business"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014849_jx0deueka",
+      "createdAt": "2025-11-16T08:50:14.849Z",
+      "updatedAt": "2025-11-16T08:50:14.849Z"
+    },
+    {
+      "eventId": "E011",
+      "name": "Resume and LinkedIn Clinic",
+      "category": "Career",
+      "location": "Campus Center",
+      "startTime": "2025-11-05T13:00:00.000Z",
+      "tags": [
+        "career",
+        "workshops"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014849_anqhnf38x",
+      "createdAt": "2025-11-16T08:50:14.849Z",
+      "updatedAt": "2025-11-16T08:50:14.849Z"
+    },
+    {
+      "eventId": "E012",
+      "name": "Music on the Green",
+      "category": "Social",
+      "location": "Quad",
+      "startTime": "2025-11-06T19:00:00.000Z",
+      "tags": [
+        "music",
+        "social"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014849_p899bei54",
+      "createdAt": "2025-11-16T08:50:14.849Z",
+      "updatedAt": "2025-11-16T08:50:14.849Z"
+    },
+    {
+      "eventId": "E013",
+      "name": "Campus Cleanup Day",
+      "category": "Community",
+      "location": "Quad",
+      "startTime": "2025-11-02T10:00:00.000Z",
+      "tags": [
+        "community",
+        "volunteering"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014849_9gg7sjasj",
+      "createdAt": "2025-11-16T08:50:14.849Z",
+      "updatedAt": "2025-11-16T08:50:14.849Z"
+    },
+    {
+      "eventId": "E014",
+      "name": "Intro to Personal Finance",
+      "category": "Finance",
+      "location": "Innovation Hub",
+      "startTime": "2025-11-03T16:00:00.000Z",
+      "tags": [
+        "finance",
+        "students"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014849_m2t6ok8a8",
+      "createdAt": "2025-11-16T08:50:14.849Z",
+      "updatedAt": "2025-11-16T08:50:14.849Z"
+    },
+    {
+      "eventId": "E015",
+      "name": "Data Science Club Meetup",
+      "category": "Tech",
+      "location": "Innovation Hub",
+      "startTime": "2025-11-07T18:00:00.000Z",
+      "tags": [
+        "data",
+        "ai"
+      ],
+      "cost": 5,
+      "isPaid": true,
+      "description": "$5.00",
+      "_id": "event_1763283014850_o7two4tay",
+      "createdAt": "2025-11-16T08:50:14.850Z",
+      "updatedAt": "2025-11-16T08:50:14.850Z"
+    },
+    {
+      "eventId": "E016",
+      "name": "Movie Night",
+      "category": "Social",
+      "location": "Student Union",
+      "startTime": "2025-11-08T20:00:00.000Z",
+      "tags": [
+        "film",
+        "social"
+      ],
+      "cost": 8,
+      "isPaid": true,
+      "description": "$8.00",
+      "_id": "event_1763283014850_qoaqt0na5",
+      "createdAt": "2025-11-16T08:50:14.850Z",
+      "updatedAt": "2025-11-16T08:50:14.850Z"
+    },
+    {
+      "eventId": "E017",
+      "name": "Leadership Workshop",
+      "category": "Academic",
+      "location": "Business School Atrium",
+      "startTime": "2025-11-01T12:00:00.000Z",
+      "tags": [
+        "leadership",
+        "skills"
+      ],
+      "cost": 12,
+      "isPaid": true,
+      "description": "$12.00",
+      "_id": "event_1763283014850_8akuvj7f3",
+      "createdAt": "2025-11-16T08:50:14.850Z",
+      "updatedAt": "2025-11-16T08:50:14.850Z"
+    },
+    {
+      "eventId": "E018",
+      "name": "Healthy Eating on a Budget",
+      "category": "Wellness",
+      "location": "Campus Center",
+      "startTime": "2025-11-04T12:30:00.000Z",
+      "tags": [
+        "wellness",
+        "finance"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014850_llfw15spc",
+      "createdAt": "2025-11-16T08:50:14.850Z",
+      "updatedAt": "2025-11-16T08:50:14.850Z"
+    },
+    {
+      "eventId": "E019",
+      "name": "Campus Job Fair",
+      "category": "Career",
+      "location": "Campus Center",
+      "startTime": "2025-11-09T13:00:00.000Z",
+      "tags": [
+        "career",
+        "employment"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014850_rihfw7tr1",
+      "createdAt": "2025-11-16T08:50:14.850Z",
+      "updatedAt": "2025-11-16T08:50:14.850Z"
+    },
+    {
+      "eventId": "E020",
+      "name": "Library Late Night Study",
+      "category": "Academic",
+      "location": "Library",
+      "startTime": "2025-11-10T21:00:00.000Z",
+      "tags": [
+        "study",
+        "academic"
+      ],
+      "cost": 0,
+      "isPaid": false,
+      "description": "Free Event",
+      "_id": "event_1763283014850_55v56lcqb",
+      "createdAt": "2025-11-16T08:50:14.850Z",
+      "updatedAt": "2025-11-16T08:50:14.850Z"
+    },
+    {
+      "eventId": "E021",
+      "name": "Concert Series - Fall Edition",
+      "category": "Social",
+      "location": "Auditorium",
+      "startTime": "2025-11-12T19:00:00.000Z",
+      "tags": [
+        "music",
+        "entertainment"
+      ],
+      "cost": 20,
+      "isPaid": true,
+      "description": "$20.00",
+      "_id": "event_1763283014850_et5rg2gm3",
+      "createdAt": "2025-11-16T08:50:14.850Z",
+      "updatedAt": "2025-11-16T08:50:14.850Z"
+    },
+    {
+      "eventId": "E022",
+      "name": "Advanced Coding Bootcamp",
+      "category": "Tech",
+      "location": "Computer Lab",
+      "startTime": "2025-11-13T14:00:00.000Z",
+      "tags": [
+        "programming",
+        "tech"
+      ],
+      "cost": 25,
+      "isPaid": true,
+      "description": "$25.00",
+      "_id": "event_1763283014850_iq0ol80w1",
+      "createdAt": "2025-11-16T08:50:14.850Z",
+      "updatedAt": "2025-11-16T08:50:14.850Z"
+    },
+    {
+      "eventId": "E023",
+      "name": "Professional Photography Workshop",
+      "category": "Arts",
+      "location": "Studio",
+      "startTime": "2025-11-14T10:00:00.000Z",
+      "tags": [
+        "photography",
+        "arts"
+      ],
+      "cost": 15,
+      "isPaid": true,
+      "description": "$15.00",
+      "_id": "event_1763283014850_lvo923yp8",
+      "createdAt": "2025-11-16T08:50:14.850Z",
+      "updatedAt": "2025-11-16T08:50:14.850Z"
+    },
+    {
+      "eventId": "E024",
+      "name": "Chef's Table Dining Experience",
+      "category": "Social",
+      "location": "Dining Hall",
+      "startTime": "2025-11-15T18:30:00.000Z",
+      "tags": [
+        "food",
+        "dining"
+      ],
+      "cost": 30,
+      "isPaid": true,
+      "description": "$30.00",
+      "_id": "event_1763283014851_8vsdvbqo9",
+      "createdAt": "2025-11-16T08:50:14.851Z",
+      "updatedAt": "2025-11-16T08:50:14.851Z"
+    },
+    {
+      "eventId": "E025",
+      "name": "Adventure Sports Day",
+      "category": "Sports",
+      "location": "Outdoor Field",
+      "startTime": "2025-11-16T09:00:00.000Z",
+      "tags": [
+        "sports",
+        "adventure"
+      ],
+      "cost": 18,
+      "isPaid": true,
+      "description": "$18.00",
+      "_id": "event_1763283014851_vs1gqb83q",
+      "createdAt": "2025-11-16T08:50:14.851Z",
+      "updatedAt": "2025-11-16T08:50:14.851Z"
+    },
+    {
+      "eventId": "E026",
+      "name": "Investment Strategies Seminar",
+      "category": "Finance",
+      "location": "Business School",
+      "startTime": "2025-11-17T16:00:00.000Z",
+      "tags": [
+        "finance",
+        "investment"
+      ],
+      "cost": 22,
+      "isPaid": true,
+      "description": "$22.00",
+      "_id": "event_1763283014851_yl5wbp8wr",
+      "createdAt": "2025-11-16T08:50:14.851Z",
+      "updatedAt": "2025-11-16T08:50:14.851Z"
+    },
+    {
+      "eventId": "E027",
+      "name": "Tech Startup Pitch Night",
+      "category": "Tech",
+      "location": "Innovation Hub",
+      "startTime": "2025-11-18T17:00:00.000Z",
+      "tags": [
+        "startups",
+        "networking"
+      ],
+      "cost": 10,
+      "isPaid": true,
+      "description": "$10.00",
+      "_id": "event_1763283014851_a0xe1jrur",
+      "createdAt": "2025-11-16T08:50:14.851Z",
+      "updatedAt": "2025-11-16T08:50:14.851Z"
+    },
+    {
+      "eventId": "E028",
+      "name": "Yoga & Meditation Retreat",
+      "category": "Wellness",
+      "location": "Wellness Center",
+      "startTime": "2025-11-19T08:00:00.000Z",
+      "tags": [
+        "wellness",
+        "health"
+      ],
+      "cost": 12,
+      "isPaid": true,
+      "description": "$12.00",
+      "_id": "event_1763283014851_wjppsmjat",
+      "createdAt": "2025-11-16T08:50:14.851Z",
+      "updatedAt": "2025-11-16T08:50:14.851Z"
+    }
+  ],
   "eventAttendances": [],
   "classAttendances": [
     {
@@ -746,6 +1223,6 @@
   ],
   "_meta": {
     "createdAt": "2025-11-16T07:28:48.253Z",
-    "lastModified": "2025-11-16T08:40:56.526Z"
+    "lastModified": "2025-11-16T08:50:14.851Z"
   }
 }
