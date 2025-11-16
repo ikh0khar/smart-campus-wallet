@@ -239,7 +239,7 @@ class Collection {
   }
 
   // Create new document
-  create(data) {
+  async create(data) {
     if (!db) loadDB();
     const doc = {
       ...data,
@@ -251,19 +251,36 @@ class Collection {
     // Convert Date objects to ISO strings for storage
     const sanitize = (obj) => {
       if (obj instanceof Date) return obj.toISOString();
-      if (typeof obj === 'object' && obj !== null) {
+      if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
         const result = {};
         for (const key in obj) {
           result[key] = sanitize(obj[key]);
         }
         return result;
       }
+      if (Array.isArray(obj)) {
+        return obj.map(item => sanitize(item));
+      }
       return obj;
     };
     
-    db[this.name].push(this.sanitize(doc));
-    saveDB();
-    return Promise.resolve(doc);
+    const sanitizedDoc = this.sanitize(doc);
+    db[this.name].push(sanitizedDoc);
+    saveDB(); // This should be synchronous and complete before returning
+    
+    // Return document with dates as Date objects for consistency
+    const result = { ...sanitizedDoc };
+    if (result.date && typeof result.date === 'string') {
+      result.date = new Date(result.date);
+    }
+    if (result.createdAt && typeof result.createdAt === 'string') {
+      result.createdAt = new Date(result.createdAt);
+    }
+    if (result.updatedAt && typeof result.updatedAt === 'string') {
+      result.updatedAt = new Date(result.updatedAt);
+    }
+    
+    return Promise.resolve(result);
   }
 
   // Save document (for updates)
@@ -403,14 +420,34 @@ class Collection {
   }
 
   // Delete all matching
-  deleteMany(query = {}) {
+  async deleteMany(query = {}) {
     if (!db) loadDB();
     const before = db[this.name].length;
+    
+    // If empty query, delete all
+    if (Object.keys(query).length === 0) {
+      const deleted = db[this.name].length;
+      db[this.name] = [];
+      saveDB();
+      return Promise.resolve({ deletedCount: deleted });
+    }
+    
+    // Filter out matching documents
     db[this.name] = db[this.name].filter(doc => {
       return !Object.keys(query).every(key => {
-        return doc[key] === query[key];
+        const queryValue = query[key];
+        const docValue = doc[key];
+        
+        // Handle RegExp
+        if (queryValue instanceof RegExp) {
+          return !queryValue.test(String(docValue));
+        }
+        
+        // Exact match
+        return docValue !== queryValue && docValue?.toString() !== queryValue?.toString();
       });
     });
+    
     const deleted = before - db[this.name].length;
     saveDB();
     return Promise.resolve({ deletedCount: deleted });

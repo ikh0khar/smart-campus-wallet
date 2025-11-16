@@ -76,18 +76,29 @@ router.get('/', async (req, res) => {
     let transactions = await sortResult.lean();
 
     // Normalize categories in response and transform to match API format
-    transactions = transactions.map(t => ({
-      id: t._id,
-      transactionId: t.transactionId,
-      userId: t.userId,
-      type: 'purchase',
-      amount: t.amount,
-      category: normalizeCategory(t.category),
-      description: t.merchant,
-      location: t.location,
-      paymentMethod: t.paymentMethod,
-      date: t.date.toISOString(),
-    }));
+    transactions = transactions.map(t => {
+      // Handle date - could be string or Date object
+      let dateStr = t.date;
+      if (dateStr instanceof Date) {
+        dateStr = dateStr.toISOString();
+      } else if (dateStr && typeof dateStr === 'string') {
+        // Already a string, ensure it's in ISO format
+        dateStr = new Date(dateStr).toISOString();
+      }
+      
+      return {
+        id: t._id,
+        transactionId: t.transactionId,
+        userId: t.userId,
+        type: 'purchase',
+        amount: t.amount,
+        category: normalizeCategory(t.category),
+        description: t.merchant,
+        location: t.location,
+        paymentMethod: t.paymentMethod,
+        date: dateStr || new Date().toISOString(),
+      };
+    });
 
     res.json({
       success: true,
@@ -258,7 +269,7 @@ router.get('/trends', async (req, res) => {
   try {
     const { period = 'daily', startDate, endDate, userId } = req.query;
     
-    // Build MongoDB query
+    // Build query
     const query = {};
     if (userId) {
       query.userId = userId;
@@ -274,13 +285,33 @@ router.get('/trends', async (req, res) => {
     }
 
     // Get transactions
-    const transactions = await Transaction.find(query).lean();
+    const transactionsResult = await Transaction.find(query);
+    let transactions = await transactionsResult.lean();
+    
+    // Ensure transactions is an array
+    if (!Array.isArray(transactions)) {
+      transactions = [];
+    }
 
     // Group by time period
     const trendsMap = {};
 
     transactions.forEach(transaction => {
-      const date = new Date(transaction.date);
+      // Handle date - could be string or Date object
+      let date;
+      if (transaction.date instanceof Date) {
+        date = transaction.date;
+      } else if (typeof transaction.date === 'string') {
+        date = new Date(transaction.date);
+      } else {
+        date = new Date(); // fallback
+      }
+      
+      // Skip invalid dates
+      if (isNaN(date.getTime())) {
+        return;
+      }
+      
       let key;
 
       if (period === 'daily') {
@@ -291,7 +322,9 @@ router.get('/trends', async (req, res) => {
         weekStart.setDate(date.getDate() - date.getDay());
         key = weekStart.toISOString().split('T')[0];
       } else if (period === 'monthly') {
-        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const month = date.getMonth() + 1;
+        const monthStr = month < 10 ? `0${month}` : `${month}`;
+        key = `${date.getFullYear()}-${monthStr}`;
       } else {
         key = date.toISOString().split('T')[0];
       }
@@ -323,9 +356,11 @@ router.get('/trends', async (req, res) => {
     });
   } catch (error) {
     console.error('Get trends error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
       message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -361,7 +396,9 @@ router.get('/:id', async (req, res) => {
       description: transaction.merchant,
       location: transaction.location,
       paymentMethod: transaction.paymentMethod,
-      date: transaction.date.toISOString(),
+      date: transaction.date instanceof Date 
+        ? transaction.date.toISOString() 
+        : (typeof transaction.date === 'string' ? new Date(transaction.date).toISOString() : new Date().toISOString()),
     };
 
     res.json({
@@ -445,7 +482,9 @@ router.post('/', async (req, res) => {
         description: transaction.merchant,
         location: transaction.location,
         paymentMethod: transaction.paymentMethod,
-        date: transaction.date.toISOString(),
+        date: transaction.date instanceof Date 
+          ? transaction.date.toISOString() 
+          : (typeof transaction.date === 'string' ? new Date(transaction.date).toISOString() : new Date().toISOString()),
       },
     });
   } catch (error) {
@@ -540,7 +579,9 @@ router.put('/:id', async (req, res) => {
         description: transaction.merchant,
         location: transaction.location,
         paymentMethod: transaction.paymentMethod,
-        date: transaction.date.toISOString(),
+        date: transaction.date instanceof Date 
+          ? transaction.date.toISOString() 
+          : (typeof transaction.date === 'string' ? new Date(transaction.date).toISOString() : new Date().toISOString()),
       },
     });
   } catch (error) {

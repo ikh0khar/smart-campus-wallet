@@ -15,35 +15,62 @@ router.get('/events', async (req, res) => {
   try {
     const { category, isFree, userId } = req.query;
 
-    // Build MongoDB query
+    // Build query
     const query = {};
     if (category) {
       query.category = new RegExp(`^${category}$`, 'i');
     }
 
-    // Get events from JSON database
-    let events = await (await Event.find(query)).lean();
+    // Get events from JSON database - reload to ensure fresh data
+    const jsonDB = require('../db/json-db');
+    jsonDB.loadDB();
+    const eventsResult = await Event.find(query);
+    let events = await eventsResult.lean();
+    
+    // Ensure events array
+    if (!Array.isArray(events)) {
+      events = [];
+    }
 
     // Filter by free/paid
     if (isFree !== undefined) {
       const freeFilter = isFree === 'true';
-      events = events.filter(e => (e.cost === 0 || e.cost === '0') === freeFilter);
+      events = events.filter(e => {
+        const cost = parseFloat(e.cost) || 0;
+        const isFreeEvent = cost === 0;
+        return isFreeEvent === freeFilter;
+      });
     }
 
     // Add attendance status if userId provided
     if (userId) {
-      const attendedEvents = await EventAttendance.distinct('eventId', { userId });
-      events = events.map(event => ({
-        ...event,
-        eventId: event.eventId, // Keep original eventId
-        isAttending: attendedEvents.includes(event.eventId),
-        isFree: event.cost === 0 || event.cost === '0',
-      }));
+      // Get distinct event IDs user is attending
+      const attendanceResult = await EventAttendance.find({ userId });
+      const attendances = await attendanceResult.lean();
+      const attendedEvents = [...new Set(attendances.map(a => a.eventId).filter(id => id))];
+      events = events.map(event => {
+        const cost = parseFloat(event.cost) || 0;
+        const isFreeEvent = cost === 0;
+        return {
+          ...event,
+          eventId: event.eventId, // Keep original eventId
+          isAttending: attendedEvents.includes(event.eventId),
+          isFree: isFreeEvent,
+          isPaid: !isFreeEvent,
+          cost: cost
+        };
+      });
     } else {
-      events = events.map(event => ({
-        ...event,
-        isFree: event.cost === 0 || event.cost === '0',
-      }));
+      events = events.map(event => {
+        const cost = parseFloat(event.cost) || 0;
+        const isFreeEvent = cost === 0;
+        return {
+          ...event,
+          isFree: isFreeEvent,
+          isPaid: !isFreeEvent,
+          cost: cost
+        };
+      });
     }
 
     res.json({
@@ -77,9 +104,13 @@ router.get('/events/:eventId', async (req, res) => {
       });
     }
 
+    const cost = parseFloat(event.cost) || 0;
+    const isFreeEvent = cost === 0;
     const eventData = {
       ...event,
-      isFree: event.cost === 0 || event.cost === '0',
+      isFree: isFreeEvent,
+      isPaid: !isFreeEvent,
+      cost: cost
     };
 
     // Add attendance status if userId provided
@@ -108,17 +139,25 @@ router.get('/events/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     
-    // Get attended event IDs from MongoDB
-    const attendedEventIds = await EventAttendance.find({ userId }).distinct('eventId');
+    // Get attended event IDs
+    const attendedEventIdsResult = await EventAttendance.find({ userId });
+    const attendedEventIds = await attendedEventIdsResult.lean().then(events => [...new Set(events.map(e => e.eventId).filter(id => id))]);
     
     // Get event details
-    const attendedEvents = await Event.find({ eventId: { $in: attendedEventIds } }).lean();
+    const attendedEventsResult = await Event.find({ eventId: { $in: attendedEventIds } });
+    const attendedEvents = await attendedEventsResult.lean();
 
-    const formattedEvents = attendedEvents.map(event => ({
-        ...event,
-        isFree: event.cost === 0 || event.cost === '0',
-        isAttending: true,
-      }));
+      const formattedEvents = attendedEvents.map(event => {
+        const cost = parseFloat(event.cost) || 0;
+        const isFreeEvent = cost === 0;
+        return {
+          ...event,
+          isFree: isFreeEvent,
+          isPaid: !isFreeEvent,
+          cost: cost,
+          isAttending: true,
+        };
+      });
 
     res.json({
       success: true,

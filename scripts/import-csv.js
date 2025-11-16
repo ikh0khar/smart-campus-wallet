@@ -12,8 +12,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const connectDB = require('../config/database');
-const { Transaction, User } = require('../models');
+const { Transaction, User } = require('../db/json-db');
 
 function parseDate(dateString) {
   // Handle MM/DD/YY format (e.g., "10/1/25")
@@ -111,8 +110,10 @@ function parseCSV(content) {
 
 async function importCSV(filePath, clearExisting = false) {
   try {
-    // Connect to database
-    await connectDB();
+    // Load JSON database
+    const jsonDB = require('../db/json-db');
+    jsonDB.loadDB();
+    console.log('✅ JSON Database loaded');
 
     // Check if file exists
     if (!fs.existsSync(filePath)) {
@@ -174,13 +175,12 @@ async function importCSV(filePath, clearExisting = false) {
         
         // Create or update transaction
         if (existing) {
-          await Transaction.updateOne(
-            { transactionId: record.transactionId },
-            { $set: record }
-          );
+          await Transaction.findByIdAndUpdate(existing._id, record);
         } else {
-          const doc = new Transaction(record);
-          await doc.save();
+          await Transaction.create({
+            ...record,
+            _id: `id_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+          });
         }
         
         importedCount++;
@@ -197,11 +197,14 @@ async function importCSV(filePath, clearExisting = false) {
     // Create or update users (if they don't exist)
     console.log('\n👥 Creating/updating users...');
     for (const userId of uniqueUserIds) {
-      await User.findOneAndUpdate(
-        { userId: userId },
-        { userId: userId },
-        { upsert: true, new: true }
-      );
+      const existingUser = await User.findOne({ userId: userId });
+      if (!existingUser) {
+        await User.create({
+          userId: userId,
+          _id: `user_${userId}`,
+          balance: 0
+        });
+      }
     }
     console.log(`✅ Processed ${uniqueUserIds.size} users`);
 

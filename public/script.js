@@ -148,20 +148,23 @@ async function loadBudgetingData() {
     if (!contentDiv) return;
 
     try {
+        // Use first available user from dataset (U001, U002, etc.) or default
+        const defaultUserId = 'U001'; // Changed from user123 to match CSV data
+        
         // Fetch transactions summary
-        const summaryResponse = await fetch(`${API_BASE_URL}/transactions/summary`);
+        const summaryResponse = await fetch(`${API_BASE_URL}/transactions/summary?userId=${defaultUserId}`);
         const summaryData = await safeJsonParse(summaryResponse);
         
-        // Fetch transactions
-        const transactionsResponse = await fetch(`${API_BASE_URL}/transactions?limit=10`);
+        // Fetch transactions - get latest first for the user
+        const transactionsResponse = await fetch(`${API_BASE_URL}/transactions?userId=${defaultUserId}&sortBy=date&sortOrder=desc`);
         const transactionsData = await safeJsonParse(transactionsResponse);
         
         // Fetch category breakdown
-        const categoriesResponse = await fetch(`${API_BASE_URL}/transactions/categories`);
+        const categoriesResponse = await fetch(`${API_BASE_URL}/transactions/categories?userId=${defaultUserId}`);
         const categoriesData = await safeJsonParse(categoriesResponse);
         
         // Fetch trends data for line chart
-        const trendsResponse = await fetch(`${API_BASE_URL}/transactions/trends?period=monthly`);
+        const trendsResponse = await fetch(`${API_BASE_URL}/transactions/trends?period=monthly&userId=${defaultUserId}`);
         const trendsData = await safeJsonParse(trendsResponse);
         
         if (summaryData.success && transactionsData.success && categoriesData.success) {
@@ -199,11 +202,27 @@ async function loadBudgetingData() {
                 html += '</ul></div>';
             }
             
-            // Recent transactions
+            // Recent transactions - show latest first
             if (transactionsData.data && transactionsData.data.length > 0) {
                 html += '<div class="recent-transactions"><h3>Recent Transactions</h3><ul class="transaction-list">';
-                transactionsData.data.slice(0, 10).forEach(tx => {
-                    html += `<li><span class="tx-desc">${tx.description || tx.merchant || 'Transaction'}</span> <span class="tx-amount">$${tx.amount.toFixed(2)}</span> <span class="tx-category">${tx.category}</span></li>`;
+                // Sort by date descending (newest first) and take top 10
+                const sortedTransactions = [...transactionsData.data].sort((a, b) => {
+                    const dateA = new Date(a.date || 0);
+                    const dateB = new Date(b.date || 0);
+                    return dateB - dateA; // Descending (newest first)
+                });
+                sortedTransactions.slice(0, 10).forEach(tx => {
+                    const date = tx.date ? new Date(tx.date).toLocaleDateString() : '';
+                    html += `<li>
+                        <div class="tx-info">
+                            <span class="tx-desc">${tx.description || tx.merchant || 'Transaction'}</span>
+                            <span class="tx-date">${date}</span>
+                        </div>
+                        <div class="tx-details">
+                            <span class="tx-category">${tx.category || 'other'}</span>
+                            <span class="tx-amount">$${parseFloat(tx.amount || 0).toFixed(2)}</span>
+                        </div>
+                    </li>`;
                 });
                 html += '</ul></div>';
             }
@@ -380,7 +399,7 @@ function createTrendsLineChart(trendsData) {
 
 // Global variables for activity page
 let allEvents = [];
-let defaultUserId = 'user123';
+let defaultUserId = 'U001'; // Changed from user123 to match CSV data
 let currentEventFilter = 'all';
 let currentCategoryFilter = 'all';
 
@@ -857,7 +876,7 @@ async function setTotalClassDays() {
 // Check budget and award points
 async function checkBudgetRewards() {
     try {
-        const userId = defaultUserId || 'user123';
+        const userId = defaultUserId || 'U001';
         const statusEl = document.getElementById('budget-status');
         if (statusEl) {
             statusEl.textContent = 'Checking budgets...';
@@ -1024,7 +1043,7 @@ async function handleAddTransaction(event) {
     formMessage.className = 'form-message info';
     
     try {
-        const defaultUserId = 'user123';
+        const defaultUserId = 'U001';
         const transactionId = generateTransactionId();
         
         const response = await fetch(`${API_BASE_URL}/transactions`, {
@@ -1056,14 +1075,17 @@ async function handleAddTransaction(event) {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('tx-date').value = today;
             
-            // Reload budgeting data after a short delay
+            // Reload budgeting data immediately to show new transaction
+            // Force refresh with a small delay to ensure backend has saved
+            console.log('✅ Transaction added, refreshing data...');
+            await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms for backend to save
+            await loadBudgetingData();
+            console.log('✅ Budgeting data refreshed');
+            
+            // Close form after showing success message (but keep it open longer to see the new transaction)
             setTimeout(() => {
-                loadBudgetingData();
-                // Close form after 2 seconds
-                setTimeout(() => {
-                    toggleAddTransactionForm();
-                }, 2000);
-            }, 500);
+                toggleAddTransactionForm();
+            }, 3000);
         } else {
             formMessage.textContent = data.message || 'Failed to add transaction. Please try again.';
             formMessage.className = 'form-message error';
@@ -1084,7 +1106,7 @@ async function loadRewardsData() {
     if (!contentDiv) return;
 
     try {
-        const defaultUserId = 'user123';
+        const defaultUserId = 'U001';
         
         // Fetch rewards summary with userId
         const response = await fetch(`${API_BASE_URL}/rewards/summary/${defaultUserId}`);
@@ -1383,3 +1405,4 @@ async function loadRewardsData() {
         contentDiv.innerHTML = `<div class="error">Error loading rewards data: ${error.message}</div>`;
     }
 }
+

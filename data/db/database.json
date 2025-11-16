@@ -1,0 +1,751 @@
+{
+  "users": [
+    {
+      "userId": "U001",
+      "_id": "user_U001",
+      "balance": -9.99,
+      "createdAt": "2025-11-16T08:26:34.133Z",
+      "updatedAt": "2025-11-16T08:37:08.617Z"
+    },
+    {
+      "userId": "U002",
+      "_id": "user_U002",
+      "balance": 0,
+      "createdAt": "2025-11-16T08:26:34.133Z",
+      "updatedAt": "2025-11-16T08:26:34.133Z"
+    },
+    {
+      "userId": "U003",
+      "_id": "user_U003",
+      "balance": 0,
+      "createdAt": "2025-11-16T08:26:34.133Z",
+      "updatedAt": "2025-11-16T08:26:34.133Z"
+    },
+    {
+      "userId": "U004",
+      "_id": "user_U004",
+      "balance": 0,
+      "createdAt": "2025-11-16T08:26:34.133Z",
+      "updatedAt": "2025-11-16T08:26:34.133Z"
+    },
+    {
+      "userId": "U005",
+      "_id": "user_U005",
+      "balance": 0,
+      "createdAt": "2025-11-16T08:26:34.133Z",
+      "updatedAt": "2025-11-16T08:26:34.133Z"
+    },
+    {
+      "userId": "U006",
+      "_id": "user_U006",
+      "balance": 0,
+      "createdAt": "2025-11-16T08:26:34.133Z",
+      "updatedAt": "2025-11-16T08:26:34.133Z"
+    },
+    {
+      "userId": "U007",
+      "_id": "user_U007",
+      "balance": 0,
+      "createdAt": "2025-11-16T08:26:34.134Z",
+      "updatedAt": "2025-11-16T08:26:34.134Z"
+    },
+    {
+      "userId": "U008",
+      "_id": "user_U008",
+      "balance": 0,
+      "createdAt": "2025-11-16T08:26:34.134Z",
+      "updatedAt": "2025-11-16T08:26:34.134Z"
+    },
+    {
+      "userId": "U009",
+      "_id": "user_U009",
+      "balance": 0,
+      "createdAt": "2025-11-16T08:26:34.134Z",
+      "updatedAt": "2025-11-16T08:26:34.134Z"
+    },
+    {
+      "userId": "U010",
+      "_id": "user_U010",
+      "balance": 0,
+      "createdAt": "2025-11-16T08:26:34.134Z",
+      "updatedAt": "2025-11-16T08:26:34.134Z"
+    }
+  ],
+  "transactions": [
+    {
+      "transactionId": "T0001",
+      "userId": "U001",
+      "merchant": "Starbucks",
+      "category": "Dining",
+      "amount": 5.75,
+      "paymentMethod": "Dining Dollars",
+      "location": "Campus Center",
+      "date": "2025-10-01T00:00:00.000Z",
+      "_id": "id_1763282456521_2azsjt9f4",
+      "createdAt": "2025-11-16T08:40:56.521Z",
+      "updatedAt": "2025-11-16T08:40:56.521Z"
+    },
+    {
+      "transactionId": "T0002",
+      "userId": "U001",
+      "merchant": "Campus Dining Hall",
+      "category": "Dining",
+      "amount": 9.25,
+      "paymentMethod": "Meal Plan",
+      "location": "Dining Hall",
+      "date": "2025-10-02T00:00:00.000Z",
+      "_id": "id_1763282456521_kqmt4v9dl",
+      "createdAt": "2025-11-16T08:40:56.521Z",
+      "updatedAt": "2025-11-16T08:40:56.521Z"
+    },
+    {
+      "transactionId": "T0003",
+      "userId": "U001",
+      "merchant": "Bookstore",
+      "category": "Books",
+      "amount": 42.5,
+      "paymentMethod": "Campus Card",
+      "location": "Bookstore",
+      "date": "2025-10-03T00:00:00.000Z",
+      "_id": "id_1763282456522_rn66q60e8",
+      "createdAt": "2025-11-16T08:40:56.522Z",
+      "updatedAt": "2025-11-16T08:40:56.522Z"
+    },
+    {
+      "transactionId": "T0004",
+      "userId": "U002",
+      "merchant": "Target",
+      "category": "Supplies",
+      "amount": 28.99,
+      "paymentMethod": "Credit Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-01T00:00:00.000Z",
+      "_id": "id_1763282456523_umufdd3pr",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0005",
+      "userId": "U002",
+      "merchant": "Local Pizzeria",
+      "category": "Dining",
+      "amount": 14.25,
+      "paymentMethod": "Campus Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-03T00:00:00.000Z",
+      "_id": "id_1763282456523_1t5vv5370",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0006",
+      "userId": "U002",
+      "merchant": "Streaming Service",
+      "category": "Entertainment",
+      "amount": 9.99,
+      "paymentMethod": "Credit Card",
+      "location": "Online",
+      "date": "2025-10-05T00:00:00.000Z",
+      "_id": "id_1763282456523_fb8cp2yg5",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0007",
+      "userId": "U003",
+      "merchant": "Campus Dining Hall",
+      "category": "Dining",
+      "amount": 8.5,
+      "paymentMethod": "Meal Plan",
+      "location": "Dining Hall",
+      "date": "2025-10-02T00:00:00.000Z",
+      "_id": "id_1763282456523_shcdi9nfe",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0008",
+      "userId": "U003",
+      "merchant": "Gym Cafe",
+      "category": "Dining",
+      "amount": 6.75,
+      "paymentMethod": "Campus Card",
+      "location": "Rec Center",
+      "date": "2025-10-04T00:00:00.000Z",
+      "_id": "id_1763282456523_v3tmrumd2",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0009",
+      "userId": "U003",
+      "merchant": "Uber / Transit",
+      "category": "Transport",
+      "amount": 12.4,
+      "paymentMethod": "Debit Card",
+      "location": "Off-Campus",
+      "date": "2025-10-06T00:00:00.000Z",
+      "_id": "id_1763282456523_9ifptc8ja",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0010",
+      "userId": "U004",
+      "merchant": "CVS",
+      "category": "Pharmacy",
+      "amount": 16.3,
+      "paymentMethod": "Credit Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-01T00:00:00.000Z",
+      "_id": "id_1763282456523_xtr1ph6ky",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0011",
+      "userId": "U004",
+      "merchant": "Starbucks",
+      "category": "Dining",
+      "amount": 4.95,
+      "paymentMethod": "Dining Dollars",
+      "location": "Campus Center",
+      "date": "2025-10-03T00:00:00.000Z",
+      "_id": "id_1763282456523_88mc33lhl",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0012",
+      "userId": "U004",
+      "merchant": "Campus Dining Hall",
+      "category": "Dining",
+      "amount": 9.1,
+      "paymentMethod": "Meal Plan",
+      "location": "Dining Hall",
+      "date": "2025-10-07T00:00:00.000Z",
+      "_id": "id_1763282456523_a5l1abjin",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0013",
+      "userId": "U005",
+      "merchant": "Bookstore",
+      "category": "Books",
+      "amount": 63.2,
+      "paymentMethod": "Campus Card",
+      "location": "Bookstore",
+      "date": "2025-10-02T00:00:00.000Z",
+      "_id": "id_1763282456523_pv2oxkngu",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0014",
+      "userId": "U005",
+      "merchant": "Food Truck",
+      "category": "Dining",
+      "amount": 7.8,
+      "paymentMethod": "Campus Card",
+      "location": "Quad",
+      "date": "2025-10-05T00:00:00.000Z",
+      "_id": "id_1763282456523_i9v3ilsbv",
+      "createdAt": "2025-11-16T08:40:56.523Z",
+      "updatedAt": "2025-11-16T08:40:56.523Z"
+    },
+    {
+      "transactionId": "T0015",
+      "userId": "U005",
+      "merchant": "Local Pizzeria",
+      "category": "Dining",
+      "amount": 13.5,
+      "paymentMethod": "Credit Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-08T00:00:00.000Z",
+      "_id": "id_1763282456524_dg2ag9rn0",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0016",
+      "userId": "U006",
+      "merchant": "Starbucks",
+      "category": "Dining",
+      "amount": 5.6,
+      "paymentMethod": "Dining Dollars",
+      "location": "Campus Center",
+      "date": "2025-10-03T00:00:00.000Z",
+      "_id": "id_1763282456524_c18hs6bh4",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0017",
+      "userId": "U006",
+      "merchant": "Streaming Service",
+      "category": "Entertainment",
+      "amount": 9.99,
+      "paymentMethod": "Debit Card",
+      "location": "Online",
+      "date": "2025-10-04T00:00:00.000Z",
+      "_id": "id_1763282456524_l3qdg0b0p",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0018",
+      "userId": "U006",
+      "merchant": "Campus Dining Hall",
+      "category": "Dining",
+      "amount": 8.9,
+      "paymentMethod": "Meal Plan",
+      "location": "Dining Hall",
+      "date": "2025-10-06T00:00:00.000Z",
+      "_id": "id_1763282456524_v1mzpicfy",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0019",
+      "userId": "U007",
+      "merchant": "Target",
+      "category": "Supplies",
+      "amount": 35.4,
+      "paymentMethod": "Debit Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-02T00:00:00.000Z",
+      "_id": "id_1763282456524_frr257m0m",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0020",
+      "userId": "U007",
+      "merchant": "Local Pizzeria",
+      "category": "Dining",
+      "amount": 11.75,
+      "paymentMethod": "Campus Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-06T00:00:00.000Z",
+      "_id": "id_1763282456524_pnw7i510d",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0021",
+      "userId": "U007",
+      "merchant": "Uber / Transit",
+      "category": "Transport",
+      "amount": 18.2,
+      "paymentMethod": "Credit Card",
+      "location": "Off-Campus",
+      "date": "2025-10-07T00:00:00.000Z",
+      "_id": "id_1763282456524_w1nmk7vtq",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0022",
+      "userId": "U008",
+      "merchant": "Bookstore",
+      "category": "Books",
+      "amount": 24.99,
+      "paymentMethod": "Campus Card",
+      "location": "Bookstore",
+      "date": "2025-10-01T00:00:00.000Z",
+      "_id": "id_1763282456524_0owva2idr",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0023",
+      "userId": "U008",
+      "merchant": "Starbucks",
+      "category": "Dining",
+      "amount": 4.5,
+      "paymentMethod": "Dining Dollars",
+      "location": "Campus Center",
+      "date": "2025-10-02T00:00:00.000Z",
+      "_id": "id_1763282456524_qce8ron5y",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0024",
+      "userId": "U008",
+      "merchant": "Food Truck",
+      "category": "Dining",
+      "amount": 8.25,
+      "paymentMethod": "Campus Card",
+      "location": "Quad",
+      "date": "2025-10-05T00:00:00.000Z",
+      "_id": "id_1763282456524_y05uurn2b",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0025",
+      "userId": "U009",
+      "merchant": "Campus Dining Hall",
+      "category": "Dining",
+      "amount": 9.35,
+      "paymentMethod": "Meal Plan",
+      "location": "Dining Hall",
+      "date": "2025-10-03T00:00:00.000Z",
+      "_id": "id_1763282456524_apxax80md",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0026",
+      "userId": "U009",
+      "merchant": "Streaming Service",
+      "category": "Entertainment",
+      "amount": 9.99,
+      "paymentMethod": "Credit Card",
+      "location": "Online",
+      "date": "2025-10-05T00:00:00.000Z",
+      "_id": "id_1763282456524_9rp933oyo",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0027",
+      "userId": "U009",
+      "merchant": "Target",
+      "category": "Supplies",
+      "amount": 19.8,
+      "paymentMethod": "Debit Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-07T00:00:00.000Z",
+      "_id": "id_1763282456524_ib1l1vrlz",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0028",
+      "userId": "U010",
+      "merchant": "Local Pizzeria",
+      "category": "Dining",
+      "amount": 12.6,
+      "paymentMethod": "Campus Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-02T00:00:00.000Z",
+      "_id": "id_1763282456524_jxe9aoiyj",
+      "createdAt": "2025-11-16T08:40:56.524Z",
+      "updatedAt": "2025-11-16T08:40:56.524Z"
+    },
+    {
+      "transactionId": "T0029",
+      "userId": "U010",
+      "merchant": "Gym Cafe",
+      "category": "Dining",
+      "amount": 5.95,
+      "paymentMethod": "Campus Card",
+      "location": "Rec Center",
+      "date": "2025-10-04T00:00:00.000Z",
+      "_id": "id_1763282456525_8d3sz4ymb",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0030",
+      "userId": "U010",
+      "merchant": "CVS",
+      "category": "Pharmacy",
+      "amount": 13.1,
+      "paymentMethod": "Credit Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-08T00:00:00.000Z",
+      "_id": "id_1763282456525_od157cixq",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0031",
+      "userId": "U001",
+      "merchant": "Uber / Transit",
+      "category": "Transport",
+      "amount": 17.3,
+      "paymentMethod": "Credit Card",
+      "location": "Off-Campus",
+      "date": "2025-10-09T00:00:00.000Z",
+      "_id": "id_1763282456525_q86pkugfy",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0032",
+      "userId": "U002",
+      "merchant": "Campus Dining Hall",
+      "category": "Dining",
+      "amount": 8.2,
+      "paymentMethod": "Meal Plan",
+      "location": "Dining Hall",
+      "date": "2025-10-09T00:00:00.000Z",
+      "_id": "id_1763282456525_6vy7gsmw0",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0033",
+      "userId": "U003",
+      "merchant": "Bookstore",
+      "category": "Books",
+      "amount": 29.99,
+      "paymentMethod": "Campus Card",
+      "location": "Bookstore",
+      "date": "2025-10-09T00:00:00.000Z",
+      "_id": "id_1763282456525_jrjehcuak",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0034",
+      "userId": "U004",
+      "merchant": "Target",
+      "category": "Supplies",
+      "amount": 22.45,
+      "paymentMethod": "Debit Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-10T00:00:00.000Z",
+      "_id": "id_1763282456525_2y6pchuiv",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0035",
+      "userId": "U005",
+      "merchant": "Starbucks",
+      "category": "Dining",
+      "amount": 5.1,
+      "paymentMethod": "Dining Dollars",
+      "location": "Campus Center",
+      "date": "2025-10-10T00:00:00.000Z",
+      "_id": "id_1763282456525_ldrqzv539",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0036",
+      "userId": "U006",
+      "merchant": "Local Pizzeria",
+      "category": "Dining",
+      "amount": 14.75,
+      "paymentMethod": "Credit Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-11T00:00:00.000Z",
+      "_id": "id_1763282456525_nbfmuusrr",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0037",
+      "userId": "U007",
+      "merchant": "Streaming Service",
+      "category": "Entertainment",
+      "amount": 9.99,
+      "paymentMethod": "Credit Card",
+      "location": "Online",
+      "date": "2025-10-11T00:00:00.000Z",
+      "_id": "id_1763282456525_5wm5svcsi",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0038",
+      "userId": "U008",
+      "merchant": "Campus Dining Hall",
+      "category": "Dining",
+      "amount": 8.6,
+      "paymentMethod": "Meal Plan",
+      "location": "Dining Hall",
+      "date": "2025-10-11T00:00:00.000Z",
+      "_id": "id_1763282456525_ugbmzqxxc",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0039",
+      "userId": "U009",
+      "merchant": "Target",
+      "category": "Supplies",
+      "amount": 31.25,
+      "paymentMethod": "Debit Card",
+      "location": "Downtown Newark",
+      "date": "2025-10-12T00:00:00.000Z",
+      "_id": "id_1763282456525_g5lyux8ru",
+      "createdAt": "2025-11-16T08:40:56.525Z",
+      "updatedAt": "2025-11-16T08:40:56.525Z"
+    },
+    {
+      "transactionId": "T0040",
+      "userId": "U010",
+      "merchant": "Starbucks",
+      "category": "Dining",
+      "amount": 4.85,
+      "paymentMethod": "Dining Dollars",
+      "location": "Campus Center",
+      "date": "2025-10-12T00:00:00.000Z",
+      "_id": "id_1763282456526_e7d0fly1t",
+      "createdAt": "2025-11-16T08:40:56.526Z",
+      "updatedAt": "2025-11-16T08:40:56.526Z"
+    }
+  ],
+  "budgets": [],
+  "events": [],
+  "eventAttendances": [],
+  "classAttendances": [
+    {
+      "userId": "user123",
+      "totalDays": 1,
+      "attendedDays": 1,
+      "dates": [
+        "2025-11-16"
+      ],
+      "_id": "id_1763281299348_5t1f8l3ez",
+      "createdAt": "2025-11-16T08:21:39.348Z",
+      "updatedAt": "2025-11-16T08:21:44.209Z"
+    },
+    {
+      "userId": "U001",
+      "totalDays": 1,
+      "attendedDays": 1,
+      "dates": [
+        "2025-11-16"
+      ],
+      "_id": "id_1763282091420_91t86y9iz",
+      "createdAt": "2025-11-16T08:34:51.420Z",
+      "updatedAt": "2025-11-16T08:34:53.785Z"
+    }
+  ],
+  "activityLogs": [
+    {
+      "userId": "user123",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763281007066_c1j2kgodg",
+      "createdAt": "2025-11-16T08:16:47.066Z",
+      "updatedAt": "2025-11-16T08:34:04.911Z"
+    },
+    {
+      "userId": "user123",
+      "activityType": "sports",
+      "date": "2025-11-16",
+      "_id": "id_1763281069212_x72702p1l",
+      "createdAt": "2025-11-16T08:17:49.212Z",
+      "updatedAt": "2025-11-16T08:34:06.500Z"
+    },
+    {
+      "userId": "user123",
+      "activityType": "run",
+      "date": "2025-11-16",
+      "_id": "id_1763281069608_nu4n3m30k",
+      "createdAt": "2025-11-16T08:17:49.608Z",
+      "updatedAt": "2025-11-16T08:34:06.177Z"
+    },
+    {
+      "userId": "user123",
+      "activityType": "walk",
+      "date": "2025-11-16",
+      "_id": "id_1763281195302_t103c5b70",
+      "createdAt": "2025-11-16T08:19:55.302Z",
+      "updatedAt": "2025-11-16T08:34:05.527Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763282083622_dni9k21zf",
+      "createdAt": "2025-11-16T08:34:43.622Z",
+      "updatedAt": "2025-11-16T08:34:43.622Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "walk",
+      "date": "2025-11-16",
+      "_id": "id_1763282084133_xkrsbbi3u",
+      "createdAt": "2025-11-16T08:34:44.133Z",
+      "updatedAt": "2025-11-16T08:34:54.909Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "run",
+      "date": "2025-11-16",
+      "_id": "id_1763282084527_em93f40yc",
+      "createdAt": "2025-11-16T08:34:44.527Z",
+      "updatedAt": "2025-11-16T08:34:55.320Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "sports",
+      "date": "2025-11-16",
+      "_id": "id_1763282084893_malmswufg",
+      "createdAt": "2025-11-16T08:34:44.893Z",
+      "updatedAt": "2025-11-16T08:34:44.893Z"
+    }
+  ],
+  "rewardPoints": [
+    {
+      "userId": "user123",
+      "totalPoints": 200,
+      "updatedAt": "2025-11-16T08:21:39.349Z",
+      "_id": "id_1763281299349_nbycd3nss",
+      "createdAt": "2025-11-16T08:21:39.349Z"
+    },
+    {
+      "userId": "U001",
+      "totalPoints": 200,
+      "updatedAt": "2025-11-16T08:34:53.786Z",
+      "_id": "id_1763282093786_oenkcenqk",
+      "createdAt": "2025-11-16T08:34:53.786Z"
+    }
+  ],
+  "streaks": [
+    {
+      "userId": "user123",
+      "streakType": "classAttendance",
+      "current": 1,
+      "longest": 1,
+      "lastDate": "2025-11-16",
+      "_id": "id_1763281299349_esihf07sj",
+      "createdAt": "2025-11-16T08:21:39.349Z",
+      "updatedAt": "2025-11-16T08:30:06.350Z"
+    },
+    {
+      "userId": "U001",
+      "streakType": "classAttendance",
+      "current": 1,
+      "longest": 1,
+      "lastDate": "2025-11-16",
+      "_id": "id_1763282093785_498fjca8s",
+      "createdAt": "2025-11-16T08:34:53.785Z",
+      "updatedAt": "2025-11-16T08:34:53.786Z"
+    }
+  ],
+  "achievements": [
+    {
+      "userId": "user123",
+      "achievementId": "CLASS_ATTENDANCE_2025-11-16",
+      "pointsEarned": 200,
+      "earnedAt": "2025-11-16T08:21:39.349Z",
+      "_id": "id_1763281299349_xk2g3e30x",
+      "createdAt": "2025-11-16T08:21:39.349Z",
+      "updatedAt": "2025-11-16T08:21:39.349Z"
+    },
+    {
+      "userId": "U001",
+      "achievementId": "CLASS_ATTENDANCE_2025-11-16",
+      "pointsEarned": 200,
+      "earnedAt": "2025-11-16T08:34:53.786Z",
+      "_id": "id_1763282093786_v6zqzvws2",
+      "createdAt": "2025-11-16T08:34:53.786Z",
+      "updatedAt": "2025-11-16T08:34:53.786Z"
+    }
+  ],
+  "_meta": {
+    "createdAt": "2025-11-16T07:28:48.253Z",
+    "lastModified": "2025-11-16T08:40:56.526Z"
+  }
+}

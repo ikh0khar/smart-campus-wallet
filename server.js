@@ -202,33 +202,13 @@ app.get('*', (req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 
-// Start server (don't wait for MongoDB)
+// Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
   console.log(`🌐 Frontend: http://localhost:${PORT}/`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  
-  // Check MongoDB configuration
-  const mongoose = require('mongoose');
-  if (process.env.MONGODB_URI) {
-    console.log(`💾 MongoDB URI: Set`);
-    if (mongoose.connection.readyState === 1) {
-      console.log(`✅ MongoDB: Connected`);
-    } else {
-      console.log(`⚠️  MongoDB: Not connected (state: ${mongoose.connection.readyState})`);
-      console.log(`⚠️  Connection may still be establishing...`);
-      console.log(`⚠️  Check logs above for connection errors`);
-    }
-  } else {
-    console.log(`❌ MongoDB URI: NOT SET`);
-    console.log(`📋 INSTRUCTIONS TO FIX:`);
-    console.log(`   1. Go to Railway Dashboard → Your Service → Variables`);
-    console.log(`   2. Click "+ New Variable"`);
-    console.log(`   3. Name: MONGODB_URI`);
-    console.log(`   4. Value: Your MongoDB connection string`);
-    console.log(`   5. See RAILWAY_MONGODB_SETUP.md for detailed instructions`);
-    console.log(`⚠️  Server will start, but API endpoints will fail without MongoDB`);
-  }
+  console.log(`💾 Database: JSON file database (data/db/database.json)`);
+  console.log(`✅ Ready to serve requests!`);
 });
 

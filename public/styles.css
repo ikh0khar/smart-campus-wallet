@@ -508,7 +508,7 @@ body {
     padding: 0;
 }
 
-.category-list li, .transaction-list li {
+.category-list li {
     padding: 15px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
@@ -516,8 +516,42 @@ body {
     align-items: center;
 }
 
-.category-list li:last-child, .transaction-list li:last-child {
+.category-list li:last-child {
     border-bottom: none;
+}
+
+.transaction-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.transaction-list li:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(189, 51, 70, 0.3);
+    transform: translateX(5px);
+}
+
+.transaction-list li:first-child {
+    background: rgba(189, 51, 70, 0.15);
+    border-color: rgba(189, 51, 70, 0.4);
+    box-shadow: 0 4px 12px rgba(189, 51, 70, 0.2);
+}
+
+.transaction-list li:first-child:hover {
+    background: rgba(189, 51, 70, 0.2);
+    border-color: rgba(189, 51, 70, 0.5);
+}
+
+.transaction-list li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .category-name, .tx-desc {
@@ -525,17 +559,49 @@ body {
     font-weight: 500;
 }
 
-.category-amount, .tx-amount {
-    color: #4CAF50;
-    font-weight: bold;
+.tx-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.tx-desc {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.tx-date {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.tx-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
 }
 
 .tx-category {
     color: #888;
-    font-size: 0.9rem;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 4px 8px;
-    border-radius: 4px;
+    font-size: 0.85rem;
+    text-transform: capitalize;
+    padding: 4px 10px;
+    background: rgba(189, 51, 70, 0.2);
+    border-radius: 12px;
+}
+
+.category-amount {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.tx-amount {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #bd3346;
 }
 
 /* Activity Timeline */
@@ -1944,28 +2010,34 @@ body.menu-open {
 }
 
 .action-btn-small {
-    padding: 8px 16px;
-    background: rgba(189, 51, 70, 0.3);
+    padding: 12px 20px;
+    background: #bd3346;
     border: 2px solid #bd3346;
     border-radius: 20px;
     color: #fff;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: 'Inter', sans-serif;
     white-space: nowrap;
-}
-
-.action-btn-small:hover {
-    background: #bd3346;
-    transform: scale(1.05);
-}
-
-.action-btn-small {
     text-decoration: none;
     display: inline-block;
     text-align: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(189, 51, 70, 0.3);
+}
+
+.action-btn-small:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(189, 51, 70, 0.4);
+}
+
+.action-btn-small:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(189, 51, 70, 0.3);
 }
 
 .action-status {
@@ -1979,34 +2051,41 @@ body.menu-open {
 .attendance-input {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 12px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    width: 100%;
 }
 
 .input-group {
     display: flex;
-    gap: 8px;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
 }
 
 .input-field {
     flex: 1;
-    padding: 10px 15px;
+    min-width: 0;
+    padding: 12px 16px;
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
     color: #fff;
     font-size: 0.95rem;
     font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
 }
 
 .input-field::placeholder {
-    color: #888;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .input-field:focus {
     outline: none;
     border-color: #bd3346;
     background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(189, 51, 70, 0.2);
 }
 
 .activity-buttons {
@@ -2039,12 +2118,3 @@ body.menu-open {
     transform: translateY(0);
 }
 
-@media (max-width: 768px) {
-    .activity-actions-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .activity-buttons {
-        grid-template-columns: 1fr;
-    }
-}
