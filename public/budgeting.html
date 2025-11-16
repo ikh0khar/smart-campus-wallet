@@ -39,7 +39,7 @@
                 <a href="/budgeting.html" class="side-menu-item">
                     <span>Budget and spending</span>
                 </a>
-                <a href="/#activity" class="side-menu-item">
+                <a href="/activity.html" class="side-menu-item">
                     <span>My activity</span>
                 </a>
                 <a href="/#rewards" class="side-menu-item">
@@ -60,29 +60,42 @@
             </div>
         </section>
     </div>
-    <script src="script.js"></script>
     <script>
-        // Load budgeting data when page loads
+        // Menu toggle functionality (needs to be inline to work on all pages)
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize menu toggle
             const menuToggle = document.getElementById('menu-toggle');
             const sideMenu = document.getElementById('side-menu');
             const menuOverlay = document.getElementById('menu-overlay');
             
             function toggleMenu() {
-                sideMenu.classList.toggle('open');
-                menuOverlay.classList.toggle('active');
-                menuToggle.classList.toggle('active');
+                if (sideMenu) {
+                    sideMenu.classList.toggle('open');
+                }
+                if (menuOverlay) {
+                    menuOverlay.classList.toggle('active');
+                }
+                if (menuToggle) {
+                    menuToggle.classList.toggle('active');
+                }
             }
             
             if (menuToggle) {
-                menuToggle.addEventListener('click', toggleMenu);
+                menuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMenu();
+                });
             }
             
             if (menuOverlay) {
-                menuOverlay.addEventListener('click', toggleMenu);
+                menuOverlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMenu();
+                });
             }
             
+            // Close menu when clicking on menu items
             const menuItems = document.querySelectorAll('.side-menu-item');
             menuItems.forEach(item => {
                 item.addEventListener('click', function() {
@@ -96,5 +109,6 @@
             }
         });
     </script>
+    <script src="script.js"></script>
 </body>
 </html>
