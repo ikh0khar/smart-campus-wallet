@@ -603,21 +603,25 @@ router.post('/logs/:userId', async (req, res) => {
 
     const dateStr = date || new Date().toISOString().split('T')[0];
 
-    // Create activity log in MongoDB
-    try {
-      await ActivityLog.findOneAndUpdate(
-        { userId, activityType, date: dateStr },
-        { userId, activityType, date: dateStr },
-        { upsert: true, new: true }
-      );
-    } catch (error) {
-      if (error.code !== 11000) { // Ignore duplicate key errors
-        throw error;
-      }
+    // Check if activity log already exists for this date
+    const existingLog = await ActivityLog.findOne({ userId, activityType, date: dateStr });
+    
+    if (!existingLog) {
+      // Create new activity log
+      await ActivityLog.create({
+        userId,
+        activityType,
+        date: dateStr
+      });
     }
 
     // Get all logs for summary
-    const allLogs = await ActivityLog.find({ userId }).lean();
+    const allLogsResult = await ActivityLog.find({ userId });
+    const allLogs = await allLogsResult.lean();
+    
+    // Ensure allLogs is an array
+    const logsArray = Array.isArray(allLogs) ? allLogs : [];
+    
     const groupedLogs = {
       gym: [],
       sports: [],
@@ -625,9 +629,11 @@ router.post('/logs/:userId', async (req, res) => {
       run: []
     };
     
-    allLogs.forEach(log => {
-      if (groupedLogs[log.activityType]) {
-        groupedLogs[log.activityType].push(log.date);
+    logsArray.forEach(log => {
+      if (log && log.activityType && groupedLogs[log.activityType]) {
+        // Ensure date is a string
+        const dateStr = typeof log.date === 'string' ? log.date : (log.date instanceof Date ? log.date.toISOString().split('T')[0] : String(log.date));
+        groupedLogs[log.activityType].push(dateStr);
       }
     });
 
@@ -651,30 +657,60 @@ router.post('/logs/:userId', async (req, res) => {
       total: groupedLogs.gym.length + groupedLogs.sports.length + groupedLogs.walk.length + groupedLogs.run.length,
     };
 
-    // Update activity streak and award points
-    const streakResult = await updateStreak(userId, 'activities', dateStr);
-    const activityPoints = await awardActivityPoints(userId, dateStr);
+    // Update activity streak and award points (optional - errors won't fail the request)
+    let streakResult = { milestone: false, streakLength: 0, pointsEarned: 0, totalPoints: 0 };
+    let activityPoints = null;
+    let totalPointsEarned = 0;
+    let currentTotalPoints = 0;
+    
+    try {
+      streakResult = await updateStreak(userId, 'activities', dateStr);
+      if (streakResult && streakResult.pointsEarned) {
+        totalPointsEarned += streakResult.pointsEarned || 0;
+      }
+    } catch (streakError) {
+      console.error('Streak update error (non-fatal):', streakError.message);
+    }
+    
+    try {
+      activityPoints = await awardActivityPoints(userId, dateStr);
+      if (activityPoints && activityPoints.pointsEarned) {
+        totalPointsEarned += activityPoints.pointsEarned;
+      }
+    } catch (pointsError) {
+      console.error('Points award error (non-fatal):', pointsError.message);
+    }
+
+    // Get current total points
+    try {
+      const totalPointsResult = await RewardPoints.findOne({ userId });
+      currentTotalPoints = totalPointsResult ? (totalPointsResult.totalPoints || 0) : 0;
+    } catch (pointsError) {
+      // Continue without total points
+    }
 
     res.json({
       success: true,
-      message: `${activityType} activity logged`,
+      message: `${activityType} activity logged successfully`,
       data: {
         activityType,
         logs: groupedLogs,
         summary,
         rewards: {
-          streakUpdated: streakResult.milestone,
-          streakLength: streakResult.streakLength,
-          pointsEarned: streakResult.pointsEarned + (activityPoints?.pointsEarned || 0),
-          totalPoints: streakResult.totalPoints + (activityPoints?.pointsEarned || 0),
+          streakUpdated: streakResult.milestone || false,
+          streakLength: streakResult.streakLength || 0,
+          pointsEarned: totalPointsEarned,
+          totalPoints: currentTotalPoints,
         },
       },
     });
   } catch (error) {
     console.error('Log activity error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });

@@ -1136,7 +1136,7 @@
       "date": "2025-11-16",
       "_id": "id_1763282083622_dni9k21zf",
       "createdAt": "2025-11-16T08:34:43.622Z",
-      "updatedAt": "2025-11-16T09:09:08.053Z"
+      "updatedAt": "2025-11-16T09:11:07.332Z"
     },
     {
       "userId": "U001",
@@ -1144,7 +1144,7 @@
       "date": "2025-11-16",
       "_id": "id_1763282084133_xkrsbbi3u",
       "createdAt": "2025-11-16T08:34:44.133Z",
-      "updatedAt": "2025-11-16T09:09:08.901Z"
+      "updatedAt": "2025-11-16T09:09:58.708Z"
     },
     {
       "userId": "U001",
@@ -1152,7 +1152,7 @@
       "date": "2025-11-16",
       "_id": "id_1763282084527_em93f40yc",
       "createdAt": "2025-11-16T08:34:44.527Z",
-      "updatedAt": "2025-11-16T08:34:55.320Z"
+      "updatedAt": "2025-11-16T09:09:57.194Z"
     },
     {
       "userId": "U001",
@@ -1160,7 +1160,151 @@
       "date": "2025-11-16",
       "_id": "id_1763282084893_malmswufg",
       "createdAt": "2025-11-16T08:34:44.893Z",
-      "updatedAt": "2025-11-16T08:34:44.893Z"
+      "updatedAt": "2025-11-16T09:09:57.852Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763284299488_kqx4qfwwk",
+      "createdAt": "2025-11-16T09:11:39.488Z",
+      "updatedAt": "2025-11-16T09:11:39.488Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "walk",
+      "date": "2025-11-16",
+      "_id": "id_1763284305493_tvse1qzes",
+      "createdAt": "2025-11-16T09:11:45.493Z",
+      "updatedAt": "2025-11-16T09:11:45.493Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "sports",
+      "date": "2025-11-16",
+      "_id": "id_1763284308792_bwc3xd1e6",
+      "createdAt": "2025-11-16T09:11:48.792Z",
+      "updatedAt": "2025-11-16T09:11:48.792Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "run",
+      "date": "2025-11-16",
+      "_id": "id_1763284312704_rju8uqtog",
+      "createdAt": "2025-11-16T09:11:52.704Z",
+      "updatedAt": "2025-11-16T09:11:52.704Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "walk",
+      "date": "2025-11-16",
+      "_id": "id_1763284322663_9z6lkx2yx",
+      "createdAt": "2025-11-16T09:12:02.663Z",
+      "updatedAt": "2025-11-16T09:12:02.663Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "run",
+      "date": "2025-11-16",
+      "_id": "id_1763284323231_sjz9ub4g1",
+      "createdAt": "2025-11-16T09:12:03.231Z",
+      "updatedAt": "2025-11-16T09:12:03.231Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763284340306_o7nzkdcl6",
+      "createdAt": "2025-11-16T09:12:20.306Z",
+      "updatedAt": "2025-11-16T09:12:20.306Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763284352838_re5mmekm4",
+      "createdAt": "2025-11-16T09:12:32.838Z",
+      "updatedAt": "2025-11-16T09:12:32.838Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763284362227_dq69k668w",
+      "createdAt": "2025-11-16T09:12:42.227Z",
+      "updatedAt": "2025-11-16T09:12:42.227Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763284376415_ykirmb5to",
+      "createdAt": "2025-11-16T09:12:56.415Z",
+      "updatedAt": "2025-11-16T09:12:56.415Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "run",
+      "date": "2025-11-16",
+      "_id": "id_1763284377423_s5oy0ko4w",
+      "createdAt": "2025-11-16T09:12:57.423Z",
+      "updatedAt": "2025-11-16T09:12:57.423Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763284388685_5h01zf1jo",
+      "createdAt": "2025-11-16T09:13:08.685Z",
+      "updatedAt": "2025-11-16T09:13:08.685Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "walk",
+      "date": "2025-11-16",
+      "_id": "id_1763284392166_lbd8kt01a",
+      "createdAt": "2025-11-16T09:13:12.166Z",
+      "updatedAt": "2025-11-16T09:13:12.166Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763284399233_cf0al4dty",
+      "createdAt": "2025-11-16T09:13:19.233Z",
+      "updatedAt": "2025-11-16T09:13:19.233Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763284410939_uyc4e7cnz",
+      "createdAt": "2025-11-16T09:13:30.939Z",
+      "updatedAt": "2025-11-16T09:13:30.939Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "sports",
+      "date": "2025-11-16",
+      "_id": "id_1763284414649_yzrimg82v",
+      "createdAt": "2025-11-16T09:13:34.649Z",
+      "updatedAt": "2025-11-16T09:13:34.649Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "sports",
+      "date": "2025-11-16",
+      "_id": "id_1763284420462_8pw5yzcp4",
+      "createdAt": "2025-11-16T09:13:40.462Z",
+      "updatedAt": "2025-11-16T09:13:40.462Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "run",
+      "date": "2025-11-16",
+      "_id": "id_1763284421398_m8o48c0zt",
+      "createdAt": "2025-11-16T09:13:41.398Z",
+      "updatedAt": "2025-11-16T09:13:41.398Z"
     }
   ],
   "rewardPoints": [
@@ -1173,8 +1317,8 @@
     },
     {
       "userId": "U001",
-      "totalPoints": 2600,
-      "updatedAt": "2025-11-16T09:08:25.461Z",
+      "totalPoints": 3000,
+      "updatedAt": "2025-11-16T09:13:30.940Z",
       "_id": "id_1763282093786_oenkcenqk",
       "createdAt": "2025-11-16T08:34:53.786Z"
     }
@@ -1208,7 +1352,17 @@
       "lastDate": "2025-11-16",
       "_id": "id_1763283121793_ta9i0t09i",
       "createdAt": "2025-11-16T08:52:01.793Z",
-      "updatedAt": "2025-11-16T09:08:47.900Z"
+      "updatedAt": "2025-11-16T09:12:00.687Z"
+    },
+    {
+      "userId": "U001",
+      "streakType": "activities",
+      "current": 1,
+      "longest": 1,
+      "lastDate": "2025-11-16",
+      "_id": "id_1763284410939_gez97iivv",
+      "createdAt": "2025-11-16T09:13:30.939Z",
+      "updatedAt": "2025-11-16T09:13:41.399Z"
     }
   ],
   "achievements": [
@@ -1337,10 +1491,28 @@
       "_id": "id_1763284105461_ekt24i4fh",
       "createdAt": "2025-11-16T09:08:25.461Z",
       "updatedAt": "2025-11-16T09:08:25.461Z"
+    },
+    {
+      "userId": "U001",
+      "achievementId": "PAID_EVENT_E006",
+      "pointsEarned": 300,
+      "earnedAt": "2025-11-16T09:12:00.687Z",
+      "_id": "id_1763284320687_meabbi2ma",
+      "createdAt": "2025-11-16T09:12:00.687Z",
+      "updatedAt": "2025-11-16T09:12:00.687Z"
+    },
+    {
+      "userId": "U001",
+      "achievementId": "ACTIVITY_2025-11-16",
+      "pointsEarned": 100,
+      "earnedAt": "2025-11-16T09:13:30.940Z",
+      "_id": "id_1763284410940_hzh7ekymz",
+      "createdAt": "2025-11-16T09:13:30.940Z",
+      "updatedAt": "2025-11-16T09:13:30.940Z"
     }
   ],
   "_meta": {
     "createdAt": "2025-11-16T07:28:48.253Z",
-    "lastModified": "2025-11-16T09:09:08.901Z"
+    "lastModified": "2025-11-16T09:13:41.399Z"
   }
 }
