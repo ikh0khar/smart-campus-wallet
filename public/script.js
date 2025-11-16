@@ -1,6 +1,33 @@
 // API Configuration
 const API_BASE_URL = window.location.origin + '/api';
 
+// Helper function to safely parse JSON response
+async function safeJsonParse(response) {
+    try {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const text = await response.text();
+            if (!text || text.trim() === '') {
+                return { success: false, message: 'Empty response from server' };
+            }
+            try {
+                return JSON.parse(text);
+            } catch (parseError) {
+                console.error('JSON parse error:', parseError);
+                console.error('Response text:', text.substring(0, 200));
+                return { success: false, message: 'Invalid JSON response from server', rawText: text.substring(0, 200) };
+            }
+        } else {
+            const text = await response.text();
+            console.error('Non-JSON response:', text.substring(0, 200));
+            return { success: false, message: `Server returned ${contentType || 'unknown content type'} instead of JSON`, rawText: text.substring(0, 200) };
+        }
+    } catch (error) {
+        console.error('Error reading response:', error);
+        return { success: false, message: error.message || 'Error reading server response' };
+    }
+}
+
 // Menu toggle functionality - only run if not already initialized
 if (!window.menuInitialized) {
 document.addEventListener('DOMContentLoaded', function() {
@@ -59,8 +86,10 @@ async function initializeAPIIntegration() {
     // Test API connection
     try {
         const response = await fetch(`${API_BASE_URL}/health`);
-        const data = await response.json();
-        console.log('✅ API Connected:', data.message);
+        const data = await safeJsonParse(response);
+        if (data.message) {
+            console.log('✅ API Connected:', data.message);
+        }
     } catch (error) {
         console.error('❌ API Connection Error:', error);
     }
@@ -90,19 +119,19 @@ async function loadBudgetingData() {
     try {
         // Fetch transactions summary
         const summaryResponse = await fetch(`${API_BASE_URL}/transactions/summary`);
-        const summaryData = await summaryResponse.json();
+        const summaryData = await safeJsonParse(summaryResponse);
         
         // Fetch transactions
         const transactionsResponse = await fetch(`${API_BASE_URL}/transactions?limit=10`);
-        const transactionsData = await transactionsResponse.json();
+        const transactionsData = await safeJsonParse(transactionsResponse);
         
         // Fetch category breakdown
         const categoriesResponse = await fetch(`${API_BASE_URL}/transactions/categories`);
-        const categoriesData = await categoriesResponse.json();
+        const categoriesData = await safeJsonParse(categoriesResponse);
         
         // Fetch trends data for line chart
         const trendsResponse = await fetch(`${API_BASE_URL}/transactions/trends?period=monthly`);
-        const trendsData = await trendsResponse.json();
+        const trendsData = await safeJsonParse(trendsResponse);
         
         if (summaryData.success && transactionsData.success && categoriesData.success) {
             let html = '<div class="budget-dashboard">';
@@ -332,11 +361,11 @@ async function loadActivityData() {
     try {
         // Fetch all events with user attendance status
         const eventsResponse = await fetch(`${API_BASE_URL}/activities/events?userId=${defaultUserId}`);
-        const eventsData = await eventsResponse.json();
+        const eventsData = await safeJsonParse(eventsResponse);
         
         // Fetch activity summary
         const summaryResponse = await fetch(`${API_BASE_URL}/activities/summary/${defaultUserId}`);
-        const summaryData = await summaryResponse.json();
+        const summaryData = await safeJsonParse(summaryResponse);
         
         if (eventsData.success) {
             // Store all events globally
@@ -602,7 +631,7 @@ async function toggleAttendance(eventId, currentlyAttending) {
             });
             
             if (response.ok) {
-                const data = await response.json();
+                const data = await safeJsonParse(response);
                 updateEventsStatus('Event attendance removed');
                 // Update the event in allEvents
                 const event = allEvents.find(e => e.eventId === eventId);
@@ -623,8 +652,8 @@ async function toggleAttendance(eventId, currentlyAttending) {
             });
             
             if (response.ok) {
-                const data = await response.json();
-                if (data.data && data.data.rewards) {
+                const data = await safeJsonParse(response);
+                if (data.success && data.data && data.data.rewards) {
                     const points = data.data.rewards.pointsEarned || 0;
                     const totalPoints = data.data.rewards.totalPoints || 0;
                     const streak = data.data.rewards.streakLength || 0;
@@ -675,8 +704,8 @@ async function logActivity(activityType) {
         });
         
         if (response.ok) {
-            const data = await response.json();
-            if (data.data && data.data.rewards) {
+            const data = await safeJsonParse(response);
+            if (data.success && data.data && data.data.rewards) {
                 const points = data.data.rewards.pointsEarned || 0;
                 const totalPoints = data.data.rewards.totalPoints || 0;
                 const streak = data.data.rewards.streakLength || 0;
@@ -722,8 +751,8 @@ async function logClassAttendance() {
         });
         
         if (response.ok) {
-            const data = await response.json();
-            if (data.data && data.data.rewards) {
+            const data = await safeJsonParse(response);
+            if (data.success && data.data && data.data.rewards) {
                 const points = data.data.rewards.pointsEarned || 0;
                 const totalPoints = data.data.rewards.totalPoints || 0;
                 const streak = data.data.rewards.streakLength || 0;
@@ -776,11 +805,15 @@ async function setTotalClassDays() {
         });
         
         if (response.ok) {
-            const data = await response.json();
-            updateClassStatus(`✓ Total class days set to ${totalDays}`);
-            if (totalDaysInput) totalDaysInput.value = '';
-            // Reload activity data
-            loadActivityData();
+            const data = await safeJsonParse(response);
+            if (data.success) {
+                updateClassStatus(`✓ Total class days set to ${totalDays}`);
+                if (totalDaysInput) totalDaysInput.value = '';
+                // Reload activity data
+                loadActivityData();
+            } else {
+                updateClassStatus(`Error: ${data.message || 'Failed to set total days'}`);
+            }
         } else {
             updateClassStatus('Failed to set total days');
         }
@@ -807,7 +840,7 @@ async function checkBudgetRewards() {
             }
         });
         
-        const data = await response.json();
+        const data = await safeJsonParse(response);
         
         if (response.ok && data.success) {
             const pointsEarned = data.data?.pointsEarned || 0;
@@ -980,7 +1013,7 @@ async function handleAddTransaction(event) {
             })
         });
         
-        const data = await response.json();
+        const data = await safeJsonParse(response);
         
         if (response.ok && data.success) {
             formMessage.textContent = `✓ Transaction added successfully! $${amount.toFixed(2)} at ${merchant}`;
@@ -1024,7 +1057,7 @@ async function loadRewardsData() {
         
         // Fetch rewards summary with userId
         const response = await fetch(`${API_BASE_URL}/rewards/summary/${defaultUserId}`);
-        const data = await response.json();
+        const data = await safeJsonParse(response);
         
         if (data.success && data.data) {
             let html = '<div class="rewards-dashboard">';
