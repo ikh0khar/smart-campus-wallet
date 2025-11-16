@@ -50,10 +50,14 @@ async function initializeAPIIntegration() {
         loadBudgetingData();
     }
     
-    // Only load activity and rewards if on homepage
+    // Only load rewards if on homepage
     if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-        loadActivityData();
         loadRewardsData();
+    }
+    
+    // Only load activity data if on activity page
+    if (window.location.pathname === '/activity.html') {
+        loadActivityData();
     }
 }
 
@@ -120,20 +124,71 @@ async function loadActivityData() {
     if (!contentDiv) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/activities/timeline`);
-        const data = await response.json();
+        // Use a default userId for demo purposes (you can change this later)
+        const defaultUserId = 'user123';
         
-        if (data.success && data.data && data.data.length > 0) {
-            let html = '<div class="activity-timeline"><ul class="timeline-list">';
-            data.data.slice(0, 10).forEach(activity => {
-                const date = new Date(activity.date || activity.timestamp || Date.now()).toLocaleDateString();
-                html += `<li class="timeline-item">
-                    <span class="activity-type">${activity.type || activity.activityType || 'Activity'}</span>
-                    <span class="activity-date">${date}</span>
-                    ${activity.description ? `<span class="activity-desc">${activity.description}</span>` : ''}
-                </li>`;
-            });
-            html += '</ul></div>';
+        // Fetch activity summary
+        const summaryResponse = await fetch(`${API_BASE_URL}/activities/summary/${defaultUserId}`);
+        const summaryData = await summaryResponse.json();
+        
+        // Fetch events
+        const eventsResponse = await fetch(`${API_BASE_URL}/activities/events`);
+        const eventsData = await eventsResponse.json();
+        
+        if (summaryData.success) {
+            let html = '<div class="activity-dashboard">';
+            
+            // Events section
+            if (summaryData.data.events && summaryData.data.events.totalAttended > 0) {
+                html += '<div class="activity-section"><h3>Events Attended</h3>';
+                html += `<p class="activity-stat">Total: ${summaryData.data.events.totalAttended} events</p>`;
+                if (summaryData.data.events.events && summaryData.data.events.events.length > 0) {
+                    html += '<ul class="timeline-list">';
+                    summaryData.data.events.events.slice(0, 10).forEach(event => {
+                        const eventDate = event.startTime ? new Date(event.startTime).toLocaleDateString() : 'Date TBD';
+                        html += `<li class="timeline-item">
+                            <span class="activity-type">📅 ${event.name || 'Event'}</span>
+                            <span class="activity-date">${eventDate}</span>
+                            ${event.location ? `<span class="activity-desc">📍 ${event.location}</span>` : ''}
+                        </li>`;
+                    });
+                    html += '</ul></div>';
+                }
+            }
+            
+            // Class Attendance section
+            if (summaryData.data.classAttendance) {
+                html += '<div class="activity-section"><h3>Class Attendance</h3>';
+                html += `<p class="activity-stat">${summaryData.data.classAttendance.attendedDays || 0} / ${summaryData.data.classAttendance.totalDays || 0} days (${(summaryData.data.classAttendance.percentage || 0).toFixed(1)}%)</p></div>`;
+            }
+            
+            // Activities section (Gym, Sports, Walk, Run)
+            if (summaryData.data.activities && summaryData.data.activities.total > 0) {
+                html += '<div class="activity-section"><h3>Physical Activities</h3>';
+                html += '<ul class="activity-stats">';
+                if (summaryData.data.activities.gym.count > 0) {
+                    html += `<li>💪 Gym: ${summaryData.data.activities.gym.count} sessions</li>`;
+                }
+                if (summaryData.data.activities.sports.count > 0) {
+                    html += `<li>⚽ Sports: ${summaryData.data.activities.sports.count} sessions</li>`;
+                }
+                if (summaryData.data.activities.walk.count > 0) {
+                    html += `<li>🚶 Walk: ${summaryData.data.activities.walk.count} sessions</li>`;
+                }
+                if (summaryData.data.activities.run.count > 0) {
+                    html += `<li>🏃 Run: ${summaryData.data.activities.run.count} sessions</li>`;
+                }
+                html += `</ul><p class="activity-stat">Total: ${summaryData.data.activities.total} activities</p></div>`;
+            }
+            
+            // If no data available
+            if (!summaryData.data.events || summaryData.data.events.totalAttended === 0) {
+                if (!summaryData.data.activities || summaryData.data.activities.total === 0) {
+                    html += '<div class="no-data">No activity data available yet. Start logging your activities!</div>';
+                }
+            }
+            
+            html += '</div>';
             contentDiv.innerHTML = html;
             console.log('✅ Activity data loaded and displayed');
         } else {

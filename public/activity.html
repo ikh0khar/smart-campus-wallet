@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Activity - RU Stable</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Dots&family=Inter:wght@400&family=Inria+Sans:wght@400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="menu-icon" id="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="logo-container">
+                <a href="/" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit;">
+                    <img alt="RU Stable Logo" class="logo-img" src="/assets/logo.png" />
+                    <p class="logo-text">
+                        <span class="logo-red">RU</span><span> Stable</span>
+                    </p>
+                </a>
+            </div>
+            <div class="menu-icon" style="visibility: hidden;">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </header>
+
+        <!-- Side Menu -->
+        <div class="side-menu" id="side-menu">
+            <div class="side-menu-content">
+                <a href="/budgeting.html" class="side-menu-item">
+                    <span>Budget and spending</span>
+                </a>
+                <a href="/activity.html" class="side-menu-item">
+                    <span>My activity</span>
+                </a>
+                <a href="/#rewards" class="side-menu-item">
+                    <span>Rewards and incentives</span>
+                </a>
+                <a href="/" class="side-menu-item">
+                    <span>Home</span>
+                </a>
+            </div>
+        </div>
+        <div class="menu-overlay" id="menu-overlay"></div>
+
+        <!-- Activity Section -->
+        <section class="content-section">
+            <h2 class="section-title">My Activity</h2>
+            <div id="activity-content" class="section-content">
+                <div class="loading">Loading activity data...</div>
+            </div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        // Load activity data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize menu toggle
+            const menuToggle = document.getElementById('menu-toggle');
+            const sideMenu = document.getElementById('side-menu');
+            const menuOverlay = document.getElementById('menu-overlay');
+            
+            function toggleMenu() {
+                sideMenu.classList.toggle('open');
+                menuOverlay.classList.toggle('active');
+                menuToggle.classList.toggle('active');
+            }
+            
+            if (menuToggle) {
+                menuToggle.addEventListener('click', toggleMenu);
+            }
+            
+            if (menuOverlay) {
+                menuOverlay.addEventListener('click', toggleMenu);
+            }
+            
+            const menuItems = document.querySelectorAll('.side-menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    setTimeout(toggleMenu, 300);
+                });
+            });
+
+            // Load activity data
+            if (typeof loadActivityData === 'function') {
+                loadActivityData();
+            }
+        });
+    </script>
+</body>
+</html>

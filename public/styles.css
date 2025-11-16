@@ -630,3 +630,46 @@ body {
     color: #4CAF50;
     font-weight: bold;
 }
+
+/* Activity Dashboard Styles */
+.activity-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.activity-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 25px;
+}
+
+.activity-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.activity-stat {
+    font-size: 1.2rem;
+    color: #4CAF50;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.activity-stats {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+}
+
+.activity-stats li {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.activity-stats li:last-child {
+    border-bottom: none;
+}
