@@ -61,53 +61,92 @@
         </section>
     </div>
     <script>
-        // Menu toggle functionality (needs to be inline to work on all pages)
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('menu-toggle');
-            const sideMenu = document.getElementById('side-menu');
-            const menuOverlay = document.getElementById('menu-overlay');
-            
-            function toggleMenu() {
-                if (sideMenu) {
-                    sideMenu.classList.toggle('open');
+        // Menu toggle functionality - ensure it works properly
+        (function() {
+            function initMenu() {
+                const menuToggle = document.getElementById('menu-toggle');
+                const sideMenu = document.getElementById('side-menu');
+                const menuOverlay = document.getElementById('menu-overlay');
+                
+                if (!menuToggle || !sideMenu || !menuOverlay) {
+                    console.warn('Menu elements not found');
+                    return;
                 }
-                if (menuOverlay) {
-                    menuOverlay.classList.toggle('active');
+                
+                // Prevent multiple initializations
+                if (menuToggle.dataset.initialized === 'true') {
+                    return;
                 }
-                if (menuToggle) {
-                    menuToggle.classList.toggle('active');
+                menuToggle.dataset.initialized = 'true';
+                
+                function openMenu() {
+                    sideMenu.classList.add('open');
+                    menuOverlay.classList.add('active');
+                    menuToggle.classList.add('active');
+                    document.body.style.overflow = 'hidden';
                 }
-            }
-            
-            if (menuToggle) {
+                
+                function closeMenu() {
+                    sideMenu.classList.remove('open');
+                    menuOverlay.classList.remove('active');
+                    menuToggle.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+                
+                function toggleMenu() {
+                    if (sideMenu.classList.contains('open')) {
+                        closeMenu();
+                    } else {
+                        openMenu();
+                    }
+                }
+                
+                // Toggle menu on hamburger click
                 menuToggle.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     toggleMenu();
                 });
-            }
-            
-            if (menuOverlay) {
+                
+                // Close menu on overlay click
                 menuOverlay.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    toggleMenu();
+                    closeMenu();
+                });
+                
+                // Close menu when clicking on menu items
+                const menuItems = document.querySelectorAll('.side-menu-item');
+                menuItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        // Allow navigation first, then close menu
+                        setTimeout(closeMenu, 100);
+                    });
+                });
+                
+                // Close menu on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && sideMenu.classList.contains('open')) {
+                        closeMenu();
+                    }
                 });
             }
             
-            // Close menu when clicking on menu items
-            const menuItems = document.querySelectorAll('.side-menu-item');
-            menuItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    setTimeout(toggleMenu, 300);
-                });
-            });
-
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initMenu);
+            } else {
+                initMenu();
+            }
+            
             // Load rewards data
             if (typeof loadRewardsData === 'function') {
-                loadRewardsData();
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', loadRewardsData);
+                } else {
+                    loadRewardsData();
+                }
             }
-        });
+        })();
     </script>
     <script src="script.js"></script>
 </body>

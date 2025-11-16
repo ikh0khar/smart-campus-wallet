@@ -1233,3 +1233,32 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Enhanced Menu Styles - Ensure menu works properly */
+.menu-icon {
+    z-index: 1002 !important;
+}
+
+.side-menu {
+    z-index: 1000 !important;
+}
+
+.menu-overlay {
+    z-index: 999 !important;
+}
+
+/* Ensure menu is visible when open */
+.side-menu.open {
+    left: 0 !important;
+    visibility: visible !important;
+}
+
+.menu-overlay.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Prevent body scroll when menu is open */
+body.menu-open {
+    overflow: hidden !important;
+}
