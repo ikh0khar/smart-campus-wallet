@@ -90,6 +90,7 @@ app.use('/api/transactions', transactionsRouter);
 app.use('/api/budgets', budgetsRouter);
 app.use('/api/activities', require('./routes/activities'));
 app.use('/api/rewards', require('./routes/rewards'));
+app.use('/api/meal-plans', require('./routes/mealPlans'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

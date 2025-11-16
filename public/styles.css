@@ -490,6 +490,151 @@ body {
     color: #fff;
 }
 
+/* Meal Plan Section */
+.meal-plan-section {
+    margin-bottom: 30px;
+}
+
+.meal-plan-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 25px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(189, 51, 70, 0.3);
+}
+
+.meal-plan-title {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #fff;
+    text-align: center;
+}
+
+.meal-plan-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.meal-plan-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.meal-plan-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.meal-plan-stat .stat-label {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 5px;
+}
+
+.meal-plan-stat .stat-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.meal-plan-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #bd3346 0%, #ff6b7a 100%);
+    border-radius: 12px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #ccc;
+    margin: 0;
+}
+
+.meal-swipe-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #bd3346 0%, #ff6b7a 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.meal-swipe-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ff6b7a 0%, #bd3346 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(189, 51, 70, 0.4);
+}
+
+.meal-swipe-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.meal-swipe-btn:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: #888;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.meal-plan-message {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    animation: slideIn 0.3s ease;
+}
+
+.meal-plan-message.success {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+    border: 1px solid rgba(76, 175, 80, 0.5);
+}
+
+.meal-plan-message.error {
+    background: rgba(189, 51, 70, 0.2);
+    color: #ff6b7a;
+    border: 1px solid rgba(189, 51, 70, 0.5);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .category-breakdown, .recent-transactions {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;

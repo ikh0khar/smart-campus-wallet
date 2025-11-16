@@ -167,8 +167,40 @@ async function loadBudgetingData() {
         const trendsResponse = await fetch(`${API_BASE_URL}/transactions/trends?period=monthly&userId=${defaultUserId}`);
         const trendsData = await safeJsonParse(trendsResponse);
         
+        // Fetch meal plan data
+        const mealPlanResponse = await fetch(`${API_BASE_URL}/meal-plans/${defaultUserId}`);
+        const mealPlanData = await safeJsonParse(mealPlanResponse);
+        
         if (summaryData.success && transactionsData.success && categoriesData.success) {
             let html = '<div class="budget-dashboard">';
+            
+            // Meal Plan Section
+            if (mealPlanData.success && mealPlanData.data) {
+                const mealPlan = mealPlanData.data;
+                const percentageUsed = mealPlan.totalSwipes > 0 ? ((mealPlan.usedSwipes / mealPlan.totalSwipes) * 100).toFixed(1) : 0;
+                
+                html += '<div class="meal-plan-section">';
+                html += '<div class="meal-plan-card">';
+                html += '<h3 class="meal-plan-title">📅 Meal Plan</h3>';
+                html += '<div class="meal-plan-info">';
+                html += `<div class="meal-plan-stats">`;
+                html += `<div class="meal-plan-stat"><span class="stat-label">Remaining</span><span class="stat-value">${mealPlan.remainingSwipes}</span></div>`;
+                html += `<div class="meal-plan-stat"><span class="stat-label">Total</span><span class="stat-value">${mealPlan.totalSwipes}</span></div>`;
+                html += `<div class="meal-plan-stat"><span class="stat-label">Used</span><span class="stat-value">${mealPlan.usedSwipes}</span></div>`;
+                html += `</div>`;
+                html += `<div class="meal-plan-progress">`;
+                html += `<div class="progress-bar-container">`;
+                html += `<div class="progress-bar" style="width: ${percentageUsed}%"></div>`;
+                html += `</div>`;
+                html += `<p class="progress-text">${percentageUsed}% used</p>`;
+                html += `</div>`;
+                html += `<button class="meal-swipe-btn" onclick="useMealSwipe('${defaultUserId}', this)" ${mealPlan.remainingSwipes <= 0 ? 'disabled' : ''}>`;
+                html += mealPlan.remainingSwipes <= 0 ? '❌ No Swipes Remaining' : '🍽️ Use Meal Swipe';
+                html += `</button>`;
+                html += `</div>`;
+                html += `</div>`;
+                html += `</div>`;
+            }
             
             // Summary cards
             html += '<div class="summary-cards">';
@@ -244,6 +276,88 @@ async function loadBudgetingData() {
     } catch (error) {
         console.error('❌ Budgeting API Error:', error);
         contentDiv.innerHTML = `<div class="error">Error loading budgeting data: ${error.message}</div>`;
+    }
+}
+
+// Use Meal Swipe Function
+async function useMealSwipe(userId, buttonElement) {
+    const button = buttonElement || document.querySelector('.meal-swipe-btn');
+    if (!button) {
+        console.error('Button element not found');
+        return;
+    }
+    const originalText = button.innerHTML;
+    
+    // Disable button immediately to prevent double-clicks
+    button.disabled = true;
+    button.innerHTML = '⏳ Processing...';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/meal-plans/${userId}/use-swipe`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await safeJsonParse(response);
+        
+        if (data.success) {
+            // Reload budgeting data to update meal plan display
+            await loadBudgetingData();
+            
+            // Show success message
+            const mealPlanSection = document.querySelector('.meal-plan-section');
+            if (mealPlanSection) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'meal-plan-message success';
+                messageDiv.textContent = '✓ Meal swipe used successfully!';
+                mealPlanSection.appendChild(messageDiv);
+                
+                // Remove message after 3 seconds
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 3000);
+            }
+        } else {
+            // Show error message
+            const mealPlanSection = document.querySelector('.meal-plan-section');
+            if (mealPlanSection) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'meal-plan-message error';
+                messageDiv.textContent = data.message || 'Failed to use meal swipe';
+                mealPlanSection.appendChild(messageDiv);
+                
+                // Remove message after 3 seconds
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 3000);
+            }
+            
+            // Restore button
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    } catch (error) {
+        console.error('❌ Use meal swipe error:', error);
+        
+        // Show error message
+        const mealPlanSection = document.querySelector('.meal-plan-section');
+        if (mealPlanSection) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'meal-plan-message error';
+            messageDiv.textContent = 'Error using meal swipe. Please try again.';
+            mealPlanSection.appendChild(messageDiv);
+            
+            // Remove message after 3 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+        
+        // Restore button
+        button.disabled = false;
+        button.innerHTML = originalText;
     }
 }
 

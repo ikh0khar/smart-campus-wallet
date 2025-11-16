@@ -38,6 +38,7 @@ function loadDB() {
         rewardPoints: [],
         streaks: [],
         achievements: [],
+        mealPlans: [],
         _meta: {
           createdAt: new Date().toISOString(),
           lastModified: new Date().toISOString()
@@ -60,6 +61,7 @@ function loadDB() {
       rewardPoints: [],
       streaks: [],
       achievements: [],
+      mealPlans: [],
       _meta: {
         createdAt: new Date().toISOString(),
         lastModified: new Date().toISOString()

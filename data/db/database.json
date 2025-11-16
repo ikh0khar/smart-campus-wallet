@@ -1089,18 +1089,10 @@
     {
       "userId": "U001",
       "eventId": "E001",
-      "attendedAt": "2025-11-16T09:28:30.332Z",
-      "_id": "id_1763285310332_f5nh49flo",
-      "createdAt": "2025-11-16T09:28:30.332Z",
-      "updatedAt": "2025-11-16T09:28:30.332Z"
-    },
-    {
-      "userId": "U001",
-      "eventId": "E002",
-      "attendedAt": "2025-11-16T09:28:36.225Z",
-      "_id": "id_1763285316225_mdyr6wiay",
-      "createdAt": "2025-11-16T09:28:36.225Z",
-      "updatedAt": "2025-11-16T09:28:36.225Z"
+      "attendedAt": "2025-11-16T14:27:41.755Z",
+      "_id": "id_1763303261755_t3vylz44o",
+      "createdAt": "2025-11-16T14:27:41.755Z",
+      "updatedAt": "2025-11-16T14:27:41.755Z"
     }
   ],
   "classAttendances": [
@@ -1411,8 +1403,8 @@
     },
     {
       "userId": "U001",
-      "totalPoints": 2850,
-      "updatedAt": "2025-11-16T09:28:36.228Z",
+      "totalPoints": 2700,
+      "updatedAt": "2025-11-16T14:27:41.758Z",
       "_id": "id_1763282093786_oenkcenqk",
       "createdAt": "2025-11-16T08:34:53.786Z"
     }
@@ -1446,7 +1438,7 @@
       "lastDate": "2025-11-16",
       "_id": "id_1763283121793_ta9i0t09i",
       "createdAt": "2025-11-16T08:52:01.793Z",
-      "updatedAt": "2025-11-16T09:28:36.226Z"
+      "updatedAt": "2025-11-16T14:27:41.757Z"
     },
     {
       "userId": "U001",
@@ -1581,23 +1573,14 @@
       "userId": "U001",
       "achievementId": "FREE_EVENT_E001",
       "pointsEarned": 150,
-      "earnedAt": "2025-11-16T09:28:30.334Z",
-      "_id": "id_1763285310334_iym1ue1x1",
-      "createdAt": "2025-11-16T09:28:30.334Z",
-      "updatedAt": "2025-11-16T09:28:30.334Z"
-    },
-    {
-      "userId": "U001",
-      "achievementId": "FREE_EVENT_E002",
-      "pointsEarned": 150,
-      "earnedAt": "2025-11-16T09:28:36.227Z",
-      "_id": "id_1763285316227_rurlqwy8y",
-      "createdAt": "2025-11-16T09:28:36.227Z",
-      "updatedAt": "2025-11-16T09:28:36.227Z"
+      "earnedAt": "2025-11-16T14:27:41.758Z",
+      "_id": "id_1763303261758_ecpjwb8n8",
+      "createdAt": "2025-11-16T14:27:41.758Z",
+      "updatedAt": "2025-11-16T14:27:41.758Z"
     }
   ],
   "_meta": {
     "createdAt": "2025-11-16T07:28:48.253Z",
-    "lastModified": "2025-11-16T14:19:42.620Z"
+    "lastModified": "2025-11-16T14:27:41.758Z"
   }
 }
