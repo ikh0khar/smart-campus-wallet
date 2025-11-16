@@ -21,6 +21,17 @@ const normalizeCategory = (category) => {
 // @access  Public
 router.get('/', async (req, res) => {
   try {
+    // Check MongoDB connection
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not connected. Please check MongoDB connection.',
+        error: 'MongoDB connection required',
+        diagnostic: '/api/diagnostic'
+      });
+    }
+
     const { category, startDate, endDate, minAmount, maxAmount, userId, sortBy = 'date', sortOrder = 'desc' } = req.query;
 
     // Build MongoDB query
@@ -93,9 +104,21 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Get transactions error:', error);
+    
+    // Check if it's a MongoDB connection error
+    if (error.name === 'MongoServerError' || error.message.includes('MongoServerError') || error.message.includes('connection')) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection error. Please check MongoDB connection.',
+        error: error.message,
+        diagnostic: '/api/diagnostic'
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

@@ -97,8 +97,52 @@ app.use('/api/rewards', require('./routes/rewards'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const mongoose = require('mongoose');
+  const dbStatus = mongoose.connection.readyState;
+  const dbStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  
   res.setHeader('Content-Type', 'application/json');
-  res.json({ status: 'OK', message: 'Smart Campus Wallet API is running' });
+  res.json({ 
+    status: 'OK', 
+    message: 'Smart Campus Wallet API is running',
+    mongodb: {
+      connected: dbStatus === 1,
+      state: dbStates[dbStatus] || 'unknown',
+      uri: process.env.MONGODB_URI ? 'Set' : 'Not set'
+    }
+  });
+});
+
+// Diagnostic endpoint to check MongoDB connection
+app.get('/api/diagnostic', (req, res) => {
+  const mongoose = require('mongoose');
+  const dbStatus = mongoose.connection.readyState;
+  const dbStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  
+  res.setHeader('Content-Type', 'application/json');
+  res.json({
+    server: 'running',
+    mongodb: {
+      uri: process.env.MONGODB_URI ? 'Set' : 'NOT SET',
+      state: dbStates[dbStatus] || 'unknown',
+      connected: dbStatus === 1,
+      host: mongoose.connection.host || 'N/A',
+      name: mongoose.connection.name || 'N/A'
+    },
+    message: dbStatus === 1 
+      ? 'Everything is working! MongoDB is connected.'
+      : 'MongoDB is not connected. Check MONGODB_URI environment variable and MongoDB service status.'
+  });
 });
 
 // Error handler middleware - MUST be before 404 handler and static files

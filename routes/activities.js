@@ -12,6 +12,17 @@ const { updateStreak, awardEventPoints, awardActivityPoints, awardClassAttendanc
 // @access  Public
 router.get('/events', async (req, res) => {
   try {
+    // Check MongoDB connection
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not connected. Please check MongoDB connection.',
+        error: 'MongoDB connection required',
+        diagnostic: '/api/diagnostic'
+      });
+    }
+
     const { category, isFree, userId } = req.query;
 
     // Build MongoDB query
