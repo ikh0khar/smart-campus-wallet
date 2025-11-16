@@ -3,25 +3,25 @@ const API_BASE_URL = window.location.origin + '/api';
 
 // Menu toggle functionality - only run if not already initialized
 if (!window.menuInitialized) {
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
         // Only run if elements exist and haven't been initialized
-        const menuToggle = document.getElementById('menu-toggle');
-        const sideMenu = document.getElementById('side-menu');
-        const menuOverlay = document.getElementById('menu-overlay');
+    const menuToggle = document.getElementById('menu-toggle');
+    const sideMenu = document.getElementById('side-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
         
         if (menuToggle && !menuToggle.dataset.initialized) {
             menuToggle.dataset.initialized = 'true';
-            
-            function toggleMenu() {
+    
+    function toggleMenu() {
                 if (sideMenu) {
-                    sideMenu.classList.toggle('open');
+        sideMenu.classList.toggle('open');
                 }
                 if (menuOverlay) {
-                    menuOverlay.classList.toggle('active');
+        menuOverlay.classList.toggle('active');
                 }
                 if (menuToggle) {
-                    menuToggle.classList.toggle('active');
-                }
+        menuToggle.classList.toggle('active');
+    }
             }
             
             menuToggle.addEventListener('click', function(e) {
@@ -29,22 +29,22 @@ if (!window.menuInitialized) {
                 e.stopPropagation();
                 toggleMenu();
             });
-            
-            if (menuOverlay) {
+    
+    if (menuOverlay) {
                 menuOverlay.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     toggleMenu();
                 });
-            }
-            
-            // Close menu when clicking on menu items
-            const menuItems = document.querySelectorAll('.side-menu-item');
-            menuItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    setTimeout(toggleMenu, 300); // Small delay for smooth transition
-                });
-            });
+    }
+    
+    // Close menu when clicking on menu items
+    const menuItems = document.querySelectorAll('.side-menu-item');
+    menuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            setTimeout(toggleMenu, 300); // Small delay for smooth transition
+        });
+    });
         }
 
         // Initialize API calls when navigating to sections
@@ -449,10 +449,51 @@ function displayEvents(events, summaryData) {
     // Activity Stats Section (My Activity Summary)
     if (summaryData && summaryData.success) {
         html += displayActivityStatsSection(summaryData);
+        
+        // Update status messages with current data
+        updateStatusFromData(summaryData);
     }
     
     html += '</div>';
     contentDiv.innerHTML = html;
+}
+
+// Update status messages from summary data
+function updateStatusFromData(summaryData) {
+    // Update events status
+    const eventsAttended = summaryData.data?.events?.totalAttended || 0;
+    const eventsStatusEl = document.getElementById('events-status');
+    if (eventsStatusEl) {
+        eventsStatusEl.textContent = `${eventsAttended} events attended - Earn points!`;
+        eventsStatusEl.style.color = '#FFD700';
+    }
+    
+    // Update class attendance status
+    const classAttendance = summaryData.data?.classAttendance;
+    if (classAttendance) {
+        const classStatusEl = document.getElementById('class-status');
+        if (classStatusEl) {
+            const today = new Date().toISOString().split('T')[0];
+            const attendedToday = classAttendance.dates?.includes(today);
+            if (attendedToday) {
+                classStatusEl.textContent = `✓ Logged today! ${classAttendance.attendedDays}/${classAttendance.totalDays} days (${classAttendance.percentage.toFixed(0)}%)`;
+                classStatusEl.style.color = '#4CAF50';
+            } else {
+                classStatusEl.textContent = `Not logged today | ${classAttendance.attendedDays}/${classAttendance.totalDays} days`;
+                classStatusEl.style.color = '#888';
+            }
+        }
+    }
+    
+    // Update physical activity status
+    const activities = summaryData.data?.activities;
+    if (activities && activities.total > 0) {
+        const activityStatusEl = document.getElementById('activity-status');
+        if (activityStatusEl) {
+            activityStatusEl.textContent = `${activities.total} activities logged - Keep it up!`;
+            activityStatusEl.style.color = '#4CAF50';
+        }
+    }
 }
 
 // Display activity statistics
@@ -561,6 +602,8 @@ async function toggleAttendance(eventId, currentlyAttending) {
             });
             
             if (response.ok) {
+                const data = await response.json();
+                updateEventsStatus('Event attendance removed');
                 // Update the event in allEvents
                 const event = allEvents.find(e => e.eventId === eventId);
                 if (event) {
@@ -580,6 +623,13 @@ async function toggleAttendance(eventId, currentlyAttending) {
             });
             
             if (response.ok) {
+                const data = await response.json();
+                if (data.data && data.data.rewards) {
+                    const points = data.data.rewards.pointsEarned || 0;
+                    updateEventsStatus(`✓ Attended! Earned ${points} points`);
+                } else {
+                    updateEventsStatus('✓ Event attendance logged');
+                }
                 // Update the event in allEvents
                 const event = allEvents.find(e => e.eventId === eventId);
                 if (event) {
@@ -591,7 +641,181 @@ async function toggleAttendance(eventId, currentlyAttending) {
         }
     } catch (error) {
         console.error('Error toggling attendance:', error);
-        alert('Failed to update attendance. Please try again.');
+        updateEventsStatus('Failed to update attendance');
+    }
+}
+
+// Log physical activity (gym, sports, walk, run)
+async function logActivity(activityType) {
+    try {
+        const userId = defaultUserId;
+        const today = new Date().toISOString().split('T')[0];
+        
+        const statusEl = document.getElementById('activity-status');
+        if (statusEl) {
+            statusEl.textContent = 'Logging...';
+            statusEl.style.color = '#888';
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/activities/logs/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                activityType: activityType,
+                date: today
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.data && data.data.rewards) {
+                const points = data.data.rewards.pointsEarned || 0;
+                const streak = data.data.rewards.streakLength || 0;
+                updateActivityStatus(`✓ ${activityType} logged! +${points} points (${streak} day streak)`);
+            } else {
+                updateActivityStatus(`✓ ${activityType} activity logged!`);
+            }
+            // Reload activity data to update stats
+            loadActivityData();
+        } else {
+            updateActivityStatus('Failed to log activity');
+        }
+    } catch (error) {
+        console.error('Error logging activity:', error);
+        updateActivityStatus('Error: Please try again');
+    }
+}
+
+// Log class attendance
+async function logClassAttendance() {
+    try {
+        const userId = defaultUserId;
+        const today = new Date().toISOString().split('T')[0];
+        
+        const statusEl = document.getElementById('class-status');
+        if (statusEl) {
+            statusEl.textContent = 'Logging...';
+            statusEl.style.color = '#888';
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/activities/class-attendance/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                date: today
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.data && data.data.rewards) {
+                const points = data.data.rewards.pointsEarned || 0;
+                const streak = data.data.rewards.streakLength || 0;
+                const percentage = data.data.percentage || 0;
+                updateClassStatus(`✓ Logged! +${points} points | ${percentage.toFixed(0)}% attendance | ${streak} day streak`);
+            } else {
+                updateClassStatus(`✓ Class attendance logged for today`);
+            }
+            // Reload activity data to update stats
+            loadActivityData();
+        } else {
+            updateClassStatus('Failed to log attendance');
+        }
+    } catch (error) {
+        console.error('Error logging class attendance:', error);
+        updateClassStatus('Error: Please try again');
+    }
+}
+
+// Set total class days
+async function setTotalClassDays() {
+    try {
+        const userId = defaultUserId;
+        const totalDaysInput = document.getElementById('total-days-input');
+        const totalDays = parseInt(totalDaysInput?.value);
+        
+        if (!totalDays || totalDays < 1) {
+            alert('Please enter a valid number of class days');
+            return;
+        }
+        
+        const statusEl = document.getElementById('class-status');
+        if (statusEl) {
+            statusEl.textContent = 'Setting...';
+            statusEl.style.color = '#888';
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/activities/class-attendance/${userId}/total`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                totalDays: totalDays
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            updateClassStatus(`✓ Total class days set to ${totalDays}`);
+            if (totalDaysInput) totalDaysInput.value = '';
+            // Reload activity data
+            loadActivityData();
+        } else {
+            updateClassStatus('Failed to set total days');
+        }
+    } catch (error) {
+        console.error('Error setting total days:', error);
+        updateClassStatus('Error: Please try again');
+    }
+}
+
+// Scroll to events section
+function scrollToEvents() {
+    const eventsSection = document.querySelector('.events-section');
+    if (eventsSection) {
+        eventsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// Update status messages
+function updateEventsStatus(message) {
+    const statusEl = document.getElementById('events-status');
+    if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.style.color = message.includes('✓') ? '#4CAF50' : '#FFD700';
+        setTimeout(() => {
+            statusEl.textContent = 'Mark events as attending above';
+            statusEl.style.color = '#888';
+        }, 3000);
+    }
+}
+
+function updateActivityStatus(message) {
+    const statusEl = document.getElementById('activity-status');
+    if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.style.color = message.includes('✓') ? '#4CAF50' : '#ff4444';
+        setTimeout(() => {
+            statusEl.textContent = 'Ready to log';
+            statusEl.style.color = '#888';
+        }, 4000);
+    }
+}
+
+function updateClassStatus(message) {
+    const statusEl = document.getElementById('class-status');
+    if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.style.color = message.includes('✓') ? '#4CAF50' : '#ff4444';
+        setTimeout(() => {
+            statusEl.textContent = 'Not logged today';
+            statusEl.style.color = '#888';
+        }, 4000);
     }
 }
 

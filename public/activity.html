@@ -79,6 +79,59 @@
                 </div>
             </div>
 
+            <!-- Activity Logging Section -->
+            <div class="activity-logging-section">
+                <h3 class="section-subtitle">Log Your Activities</h3>
+                <div class="activity-actions-grid">
+                    <!-- Attend Events Card -->
+                    <div class="action-card">
+                        <div class="action-icon">📅</div>
+                        <h4 class="action-title">Attend Events</h4>
+                        <p class="action-description">Earn points for every campus event you attend</p>
+                        <p class="action-status" id="events-status">Mark events as attending above</p>
+                        <button class="action-btn" onclick="scrollToEvents()">Browse Events</button>
+                    </div>
+                    
+                    <!-- Class Attendance Card -->
+                    <div class="action-card">
+                        <div class="action-icon">🎓</div>
+                        <h4 class="action-title">Class Attendance</h4>
+                        <p class="action-description">Build streaks for consistent class attendance</p>
+                        <div class="attendance-input">
+                            <button class="action-btn" onclick="logClassAttendance()">Log Today's Attendance</button>
+                            <div class="input-group">
+                                <input type="number" id="total-days-input" placeholder="Total class days" min="1" class="input-field">
+                                <button class="action-btn-small" onclick="setTotalClassDays()">Set Total</button>
+                            </div>
+                        </div>
+                        <p class="action-status" id="class-status">Not logged today</p>
+                    </div>
+                    
+                    <!-- Physical Activities Card -->
+                    <div class="action-card">
+                        <div class="action-icon">💪</div>
+                        <h4 class="action-title">Physical Activities</h4>
+                        <p class="action-description">Log gym sessions, sports, walks, and runs</p>
+                        <div class="activity-buttons">
+                            <button class="activity-type-btn" onclick="logActivity('gym')">💪 Gym</button>
+                            <button class="activity-type-btn" onclick="logActivity('sports')">⚽ Sports</button>
+                            <button class="activity-type-btn" onclick="logActivity('walk')">🚶 Walk</button>
+                            <button class="activity-type-btn" onclick="logActivity('run')">🏃 Run</button>
+                        </div>
+                        <p class="action-status" id="activity-status">Ready to log</p>
+                    </div>
+                    
+                    <!-- Budget Status Card -->
+                    <div class="action-card">
+                        <div class="action-icon">💰</div>
+                        <h4 class="action-title">Stay Under Budget</h4>
+                        <p class="action-description">Rewards for smart spending habits</p>
+                        <a href="/budgeting.html" class="action-btn">View Budget</a>
+                        <p class="action-status" id="budget-status">Check your spending</p>
+                    </div>
+                </div>
+            </div>
+
             <div id="activity-content" class="section-content">
                 <div class="loading">Loading activity data...</div>
             </div>
