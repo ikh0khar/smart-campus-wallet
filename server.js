@@ -26,32 +26,62 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware to ensure JSON responses for API routes
 app.use((req, res, next) => {
   if (req.path && req.path.startsWith('/api/')) {
-    // Force JSON Content-Type for all API routes
-    res.setHeader('Content-Type', 'application/json');
-    
-    // Store original json method
+    // Store original methods
     const originalJson = res.json.bind(res);
+    const originalSend = res.send.bind(res);
+    const originalStatus = res.status.bind(res);
+    const originalEnd = res.end.bind(res);
     
     // Override json to ensure Content-Type is set
     res.json = function(data) {
-      res.setHeader('Content-Type', 'application/json');
+      if (!res.headersSent) {
+        res.setHeader('Content-Type', 'application/json');
+      }
       return originalJson(data);
     };
     
     // Override send to prevent HTML responses
-    const originalSend = res.send.bind(res);
     res.send = function(data) {
-      if (typeof data === 'string' && data.trim().startsWith('<')) {
-        // If HTML is being sent, convert to JSON error
-        console.error('ERROR: Attempted to send HTML for API route:', req.path);
-        return res.status(500).json({
-          success: false,
-          message: 'Server error: HTML response received instead of JSON'
-        });
+      if (typeof data === 'string') {
+        if (data.trim().startsWith('<!DOCTYPE') || data.trim().startsWith('<html')) {
+          // HTML is being sent - convert to JSON error
+          console.error('ERROR: Attempted to send HTML for API route:', req.method, req.path);
+          if (!res.headersSent) {
+            res.setHeader('Content-Type', 'application/json');
+          }
+          return originalJson({
+            success: false,
+            message: 'Server error: HTML response received instead of JSON',
+            path: req.path,
+            method: req.method
+          });
+        }
       }
-      res.setHeader('Content-Type', 'application/json');
+      if (!res.headersSent) {
+        res.setHeader('Content-Type', 'application/json');
+      }
       return originalSend(data);
     };
+    
+    // Override end to catch any HTML
+    res.end = function(chunk, encoding) {
+      if (chunk && typeof chunk === 'string' && (chunk.trim().startsWith('<!DOCTYPE') || chunk.trim().startsWith('<html'))) {
+        console.error('ERROR: Attempted to end with HTML for API route:', req.method, req.path);
+        if (!res.headersSent) {
+          res.setHeader('Content-Type', 'application/json');
+        }
+        return originalJson({
+          success: false,
+          message: 'Server error: HTML response received instead of JSON',
+          path: req.path,
+          method: req.method
+        });
+      }
+      return originalEnd(chunk, encoding);
+    };
+    
+    // Ensure Content-Type is set early
+    res.setHeader('Content-Type', 'application/json');
   }
   next();
 });
@@ -64,6 +94,7 @@ app.use('/api/rewards', require('./routes/rewards'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
   res.json({ status: 'OK', message: 'Smart Campus Wallet API is running' });
 });
 
@@ -84,10 +115,11 @@ app.use((err, req, res, next) => {
   }
 });
 
-// 404 handler for API routes - must be after routes but before static files
+// Disable Express default 404 handler and create custom one
+// This MUST be after all routes
 app.use((req, res, next) => {
   if (req.path && req.path.startsWith('/api/')) {
-    // This only runs if no route matched
+    // API route not found - return JSON
     res.setHeader('Content-Type', 'application/json');
     return res.status(404).json({
       success: false,
@@ -95,13 +127,16 @@ app.use((req, res, next) => {
       availableEndpoints: [
         'GET /api/health',
         'GET /api/transactions',
+        'POST /api/transactions',
         'GET /api/budgets',
+        'POST /api/budgets',
         'POST /api/budgets/check-rewards/:userId',
         'GET /api/activities/events',
         'GET /api/rewards/summary/:userId'
       ]
     });
   }
+  // For non-API routes, let it continue to static file serving
   next();
 });
 
