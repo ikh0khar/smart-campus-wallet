@@ -9,6 +9,7 @@
     "import": "node scripts/import-csv.js",
     "seed:budgets": "node scripts/seed-budgets.js",
     "seed:events": "node scripts/seed-events.js",
+    "seed:all": "node scripts/deploy-import-data.js",
     "test:connection": "node scripts/test-connection.js",
     "test:api": "node scripts/test-api-endpoints.js",
     "verify": "node scripts/verify-integration.js",
