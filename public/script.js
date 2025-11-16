@@ -1449,7 +1449,7 @@ async function loadRewardsData() {
             
             // Fabricated leaderboard data
             const leaderboardData = [
-                { name: 'Alex Chen', points: 12500, tier: '🔥 Fire' },
+                { name: 'Alex Chen', points: 12500, tier: 'Gold' },
                 { name: 'Sarah Johnson', points: 9800, tier: 'Gold' },
                 { name: 'Michael Park', points: 8750, tier: 'Gold' },
                 { name: 'Emily Davis', points: 7200, tier: 'Silver' },
@@ -1458,7 +1458,7 @@ async function loadRewardsData() {
                 { name: 'Ryan Thompson', points: 4900, tier: 'Bronze' },
                 { name: 'Olivia Wilson', points: 4200, tier: 'Bronze' },
                 { name: 'James Brown', points: 3600, tier: 'Bronze' },
-                { name: 'Sophia Anderson', points: totalPoints, tier: isFireTier ? '🔥 Fire' : (totalPoints >= 5000 ? 'Gold' : totalPoints >= 3000 ? 'Silver' : 'Bronze') }
+                { name: 'Sophia Anderson', points: totalPoints, tier: totalPoints >= 5000 ? 'Gold' : totalPoints >= 3000 ? 'Silver' : 'Bronze' }
             ];
             
             // Sort by points (descending)
@@ -1470,11 +1470,14 @@ async function loadRewardsData() {
                 const rowClass = isCurrentUser ? 'current-user' : '';
                 const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
                 
+                // Only rank #1 gets Fire Tier, everyone else uses normal tier
+                const displayTier = rank === 1 ? '🔥 Fire' : user.tier;
+                
                 html += `<tr class="${rowClass}">
                     <td class="rank-cell">${medal} ${rank}</td>
                     <td class="name-cell">${user.name} ${isCurrentUser ? '<span class="you-badge">(You)</span>' : ''}</td>
                     <td class="points-cell">${user.points.toLocaleString()}</td>
-                    <td class="tier-cell">${user.tier}</td>
+                    <td class="tier-cell">${displayTier}</td>
                 </tr>`;
             });
             
