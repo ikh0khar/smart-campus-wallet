@@ -52,59 +52,135 @@ async function initializeAPIIntegration() {
 
 // Budgeting and Spending API Integration
 async function loadBudgetingData() {
+    const contentDiv = document.getElementById('budgeting-content');
+    if (!contentDiv) return;
+
     try {
         // Fetch transactions summary
         const summaryResponse = await fetch(`${API_BASE_URL}/transactions/summary`);
         const summaryData = await summaryResponse.json();
         
-        if (summaryData.success) {
-            console.log('📊 Budget Summary:', summaryData.data);
-        }
-
         // Fetch transactions
-        const transactionsResponse = await fetch(`${API_BASE_URL}/transactions`);
+        const transactionsResponse = await fetch(`${API_BASE_URL}/transactions?limit=10`);
         const transactionsData = await transactionsResponse.json();
         
-        if (transactionsData.success) {
-            console.log(`💰 Transactions (${transactionsData.count}):`, transactionsData.data.slice(0, 5));
-        }
-
         // Fetch category breakdown
         const categoriesResponse = await fetch(`${API_BASE_URL}/transactions/categories`);
         const categoriesData = await categoriesResponse.json();
         
-        if (categoriesData.success) {
-            console.log('📈 Categories:', categoriesData.data);
+        if (summaryData.success && transactionsData.success && categoriesData.success) {
+            let html = '<div class="budget-dashboard">';
+            
+            // Summary cards
+            html += '<div class="summary-cards">';
+            html += `<div class="summary-card"><h3>Total Spent</h3><p class="amount">$${summaryData.data.total.toFixed(2)}</p></div>`;
+            html += `<div class="summary-card"><h3>Transactions</h3><p class="amount">${summaryData.data.count}</p></div>`;
+            html += `<div class="summary-card"><h3>Average</h3><p class="amount">$${summaryData.data.average.toFixed(2)}</p></div>`;
+            html += `<div class="summary-card"><h3>Daily Average</h3><p class="amount">$${summaryData.data.dailyAverage.toFixed(2)}</p></div>`;
+            html += '</div>';
+            
+            // Category breakdown
+            if (categoriesData.data && categoriesData.data.length > 0) {
+                html += '<div class="category-breakdown"><h3>Spending by Category</h3><ul class="category-list">';
+                categoriesData.data.slice(0, 5).forEach(cat => {
+                    html += `<li><span class="category-name">${cat.category}</span> <span class="category-amount">$${cat.amount.toFixed(2)} (${cat.percentage.toFixed(1)}%)</span></li>`;
+                });
+                html += '</ul></div>';
+            }
+            
+            // Recent transactions
+            if (transactionsData.data && transactionsData.data.length > 0) {
+                html += '<div class="recent-transactions"><h3>Recent Transactions</h3><ul class="transaction-list">';
+                transactionsData.data.slice(0, 5).forEach(tx => {
+                    html += `<li><span class="tx-desc">${tx.description || tx.merchant || 'Transaction'}</span> <span class="tx-amount">$${tx.amount.toFixed(2)}</span> <span class="tx-category">${tx.category}</span></li>`;
+                });
+                html += '</ul></div>';
+            }
+            
+            html += '</div>';
+            contentDiv.innerHTML = html;
+            console.log('✅ Budgeting data loaded and displayed');
         }
     } catch (error) {
         console.error('❌ Budgeting API Error:', error);
+        contentDiv.innerHTML = `<div class="error">Error loading budgeting data: ${error.message}</div>`;
     }
 }
 
 // Activity API Integration
 async function loadActivityData() {
+    const contentDiv = document.getElementById('activity-content');
+    if (!contentDiv) return;
+
     try {
         const response = await fetch(`${API_BASE_URL}/activities/timeline`);
         const data = await response.json();
         
-        if (data.success) {
-            console.log('🎯 Activity Timeline:', data.data.slice(0, 5));
+        if (data.success && data.data && data.data.length > 0) {
+            let html = '<div class="activity-timeline"><ul class="timeline-list">';
+            data.data.slice(0, 10).forEach(activity => {
+                const date = new Date(activity.date || activity.timestamp || Date.now()).toLocaleDateString();
+                html += `<li class="timeline-item">
+                    <span class="activity-type">${activity.type || activity.activityType || 'Activity'}</span>
+                    <span class="activity-date">${date}</span>
+                    ${activity.description ? `<span class="activity-desc">${activity.description}</span>` : ''}
+                </li>`;
+            });
+            html += '</ul></div>';
+            contentDiv.innerHTML = html;
+            console.log('✅ Activity data loaded and displayed');
+        } else {
+            contentDiv.innerHTML = '<div class="no-data">No activity data available yet.</div>';
         }
     } catch (error) {
         console.error('❌ Activity API Error:', error);
+        contentDiv.innerHTML = `<div class="error">Error loading activity data: ${error.message}</div>`;
     }
 }
 
 // Rewards API Integration
 async function loadRewardsData() {
+    const contentDiv = document.getElementById('rewards-content');
+    if (!contentDiv) return;
+
     try {
         const response = await fetch(`${API_BASE_URL}/rewards/summary`);
         const data = await response.json();
         
-        if (data.success) {
-            console.log('🏆 Rewards Summary:', data.data);
+        if (data.success && data.data) {
+            let html = '<div class="rewards-dashboard">';
+            
+            // Points display
+            if (data.data.points !== undefined) {
+                html += `<div class="points-display"><h3>Total Points</h3><p class="points-value">${data.data.points.toLocaleString()}</p></div>`;
+            }
+            
+            // Streaks
+            if (data.data.streaks && data.data.streaks.length > 0) {
+                html += '<div class="streaks-display"><h3>Streaks</h3><ul class="streaks-list">';
+                data.data.streaks.forEach(streak => {
+                    html += `<li><span class="streak-type">${streak.type || 'Streak'}</span> <span class="streak-days">${streak.current || 0} days</span></li>`;
+                });
+                html += '</ul></div>';
+            }
+            
+            // Achievements
+            if (data.data.achievements && data.data.achievements.length > 0) {
+                html += '<div class="achievements-display"><h3>Achievements</h3><ul class="achievements-list">';
+                data.data.achievements.slice(0, 5).forEach(ach => {
+                    html += `<li><span class="ach-name">${ach.name || ach.achievementId || 'Achievement'}</span> <span class="ach-points">+${ach.points || 0} pts</span></li>`;
+                });
+                html += '</ul></div>';
+            }
+            
+            html += '</div>';
+            contentDiv.innerHTML = html;
+            console.log('✅ Rewards data loaded and displayed');
+        } else {
+            contentDiv.innerHTML = '<div class="no-data">No rewards data available yet.</div>';
         }
     } catch (error) {
         console.error('❌ Rewards API Error:', error);
+        contentDiv.innerHTML = `<div class="error">Error loading rewards data: ${error.message}</div>`;
     }
 }
