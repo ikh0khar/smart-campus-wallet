@@ -34,10 +34,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Smart Campus Wallet API is running' });
 });
 
+// Serve static files from public directory
+app.use(express.static('public'));
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
+  console.log(`Frontend: http://localhost:${PORT}/`);
 });
 
