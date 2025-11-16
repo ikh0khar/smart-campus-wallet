@@ -123,6 +123,76 @@ Stores user information:
 - `createdAt` - Account creation date
 - `updatedAt` - Last update timestamp
 
+#### Budget Model (`models/Budget.js`)
+
+Stores user budgets:
+- `userId` - User identifier
+- `name` - Budget name
+- `category` - Budget category
+- `amount` - Budget limit
+- `period` - Budget period (daily, weekly, monthly, semester)
+- `startDate` - Budget start date
+- `endDate` - Budget end date
+- `isActive` - Whether budget is active
+
+#### Event Model (`models/Event.js`)
+
+Stores campus events:
+- `eventId` - Unique event identifier
+- `name` - Event name
+- `category` - Event category
+- `location` - Event location
+- `startTime` - Event start time
+- `tags` - Event tags
+- `cost` - Event cost
+
+#### EventAttendance Model (`models/EventAttendance.js`)
+
+Tracks user event attendance:
+- `userId` - User identifier
+- `eventId` - Event identifier
+- `attendedAt` - Attendance timestamp
+
+#### ClassAttendance Model (`models/ClassAttendance.js`)
+
+Tracks class attendance:
+- `userId` - User identifier
+- `totalDays` - Total class days
+- `attendedDays` - Days attended
+- `dates` - Array of attended dates
+
+#### ActivityLog Model (`models/ActivityLog.js`)
+
+Logs user activities (gym, sports, walk, run):
+- `userId` - User identifier
+- `activityType` - Type of activity
+- `date` - Activity date
+- `createdAt` - Log creation timestamp
+
+#### RewardPoints Model (`models/RewardPoints.js`)
+
+Stores user reward points:
+- `userId` - User identifier
+- `totalPoints` - Total points earned
+- `updatedAt` - Last update timestamp
+
+#### Streak Model (`models/Streak.js`)
+
+Tracks user streaks:
+- `userId` - User identifier
+- `streakType` - Type of streak (classAttendance, activities, events)
+- `current` - Current streak length
+- `longest` - Longest streak achieved
+- `lastDate` - Last activity date
+
+#### Achievement Model (`models/Achievement.js`)
+
+Stores user achievements:
+- `userId` - User identifier
+- `achievementId` - Achievement identifier
+- `pointsEarned` - Points earned for achievement
+- `earnedAt` - Achievement earned timestamp
+
 ### Using the Models
 
 ```javascript
@@ -297,8 +367,23 @@ All endpoints return data in chart-friendly formats:
 The backend uses MongoDB with real CSV sample data:
 - **200 transactions** from `data/wallet_transactions_sample.csv`
 - **20 users** automatically created from transaction data
+- **3 budgets** seeded via `npm run seed:budgets`
+- **20 events** from `data/campus_events_sample.csv` seeded via `npm run seed:events`
 
-Data is imported using the import script. Categories are normalized:
+### Seeding Data
+
+```bash
+# Import transactions
+npm run import data/wallet_transactions_sample.csv --clear
+
+# Seed budgets
+npm run seed:budgets --clear
+
+# Seed events
+npm run seed:events --clear
+```
+
+Categories are normalized:
 - `Dining` → `food`
 - `Transport` → `transportation`
 - `Supplies` → `other`
@@ -319,32 +404,67 @@ GET /api/transactions/summary?userId=U001&startDate=2025-10-01&endDate=2025-10-3
 
 Quick start:
 1. Make sure backend is running: `npm run dev`
-2. Backend URL: `http://localhost:3000/api`
+2. Backend URL: `http://localhost:5000/api` (or check your PORT in `.env`)
 3. CORS is enabled - frontend can connect from any origin
 4. See `api-examples.js` for code examples
+
+## Testing
+
+### Test API Endpoints
+
+```bash
+# Start server first
+npm run dev
+
+# In another terminal, run tests
+npm run test:api
+```
+
+### Manual Testing
+
+```bash
+# Health check
+curl http://localhost:5000/api/health
+
+# Get transactions
+curl http://localhost:5000/api/transactions
+
+# Get budgets
+curl http://localhost:5000/api/budgets
+
+# Get events
+curl http://localhost:5000/api/activities/events
+
+# Get rewards summary
+curl http://localhost:5000/api/rewards/summary/U001
+```
+
+See [TESTING_AND_NEXT_STEPS.md](./TESTING_AND_NEXT_STEPS.md) for complete testing guide.
 
 ## Scripts
 
 ```bash
-# Test MongoDB connection
-npm run test:connection
-node scripts/test-connection.js
+# Database Connection & Verification
+npm run test:connection    # Test MongoDB connection
+npm run verify             # Verify database integration
+npm run examples           # Run query examples
 
-# Verify database integration
-npm run verify
+# Data Import & Seeding
+npm run import             # Import transactions CSV
+npm run seed:budgets       # Seed sample budgets
+npm run seed:events        # Seed campus events
 
-# Run query examples
-npm run examples
+# Testing
+npm run test:api           # Test all API endpoints
 
-# Import data
-npm run import data/wallet_transactions_sample.csv
-node scripts/import-csv.js data/wallet_transactions_sample.csv --clear
+# Server
+npm run dev                # Start development server (with auto-reload)
+npm start                  # Start production server
 
-# Start MongoDB (local)
-brew services start mongodb-community
-
-# Stop MongoDB (local)
-brew services stop mongodb-community
+# MongoDB Management (local)
+brew services start mongodb-community    # Start MongoDB
+brew services stop mongodb-community     # Stop MongoDB
+brew services list | grep mongodb        # Check MongoDB status
 ```
 
 ## Features Completed
@@ -354,28 +474,61 @@ brew services stop mongodb-community
 - Category breakdowns (chart-ready)
 - Spending summaries and trends
 - Budget tracking and progress
-- **MongoDB database integration for persistence**
+- **✅ MongoDB database integration for persistence**
 
 ✅ **Feature 2: My Activity**
 - Campus event browsing and attendance logging
 - Class attendance tracking
 - Gym/activity logging (gym, sports, walk, run)
 - Activity summaries and statistics
+- **✅ MongoDB database integration for persistence**
 
 ✅ **Feature 3: Rewards and Incentives**
 - Points system for streaks and achievements
 - Streak tracking (3 days, week, month milestones)
 - Automatic rewards when logging activities
 - Points for attending events and staying under budget
+- **✅ MongoDB database integration for persistence**
+
+## Database Status
+
+All features are now using MongoDB for persistence:
+
+- ✅ **Transactions**: 200 documents in MongoDB
+- ✅ **Budgets**: 3 documents in MongoDB
+- ✅ **Users**: 20 documents in MongoDB
+- ✅ **Events**: 20 documents in MongoDB
+- ✅ **Activities**: EventAttendance, ClassAttendance, ActivityLog models ready
+- ✅ **Rewards**: RewardPoints, Streak, Achievement models ready
+
+### Verify Database
+
+```bash
+# Check database status
+npm run verify
+
+# View all collections
+mongosh mongodb://localhost:27017/smart-campus-wallet --eval "db.getCollectionNames()"
+
+# Check document counts
+mongosh mongodb://localhost:27017/smart-campus-wallet --eval "
+print('Transactions: ' + db.transactions.countDocuments());
+print('Budgets: ' + db.budgets.countDocuments());
+print('Users: ' + db.users.countDocuments());
+print('Events: ' + db.events.countDocuments());
+"
+```
 
 ## Next Steps
 
 - [x] Add database integration (MongoDB) for persistence
 - [x] Migrate existing features to use MongoDB (Transactions & Budgets)
-- [ ] Migrate Feature 2 (My Activity) to MongoDB
-- [ ] Migrate Feature 3 (Rewards) to MongoDB
+- [x] Migrate Feature 2 (My Activity) to MongoDB
+- [x] Migrate Feature 3 (Rewards) to MongoDB
 - [ ] Add AI integration (budget recommendations, spending insights, predictions)
 - [ ] Add authentication
+- [ ] Add transaction CRUD operations (POST, PUT, DELETE)
+- [ ] Add user profile management
 
 ## License
 
