@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 // Use JSON database instead of MongoDB
-const { Event, EventAttendance, ClassAttendance, ActivityLog, RewardPoints } = require('../db/json-db');
+const { Event, EventAttendance, ClassAttendance, ActivityLog, RewardPoints, Achievement } = require('../db/json-db');
 const { updateStreak, awardEventPoints, awardActivityPoints, awardClassAttendancePoints } = require('../utils/rewardsJson');
 
 // ============================================
@@ -327,13 +327,77 @@ router.delete('/events/:eventId/attend', async (req, res) => {
       });
     }
 
+    // Get event details to calculate points to deduct
+    const event = await Event.findOne({ eventId });
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found',
+      });
+    }
+
+    // Calculate points that were awarded for this event
+    const eventCost = parseFloat(event.cost) || 0;
+    let pointsToDeduct = 0;
+    let achievementId = null;
+    
+    // Determine achievement ID and points based on event
+    if (event.category === 'Academic') {
+      pointsToDeduct = 300; // PAID_EVENT points for academic
+      achievementId = `ACADEMIC_EVENT_${eventId}`;
+    } else if (eventCost > 0) {
+      pointsToDeduct = 300; // PAID_EVENT points
+      achievementId = `PAID_EVENT_${eventId}`;
+    } else {
+      pointsToDeduct = 150; // FREE_EVENT points
+      achievementId = `FREE_EVENT_${eventId}`;
+    }
+
     // Remove attendance from JSON DB
     await EventAttendance.deleteOne({ userId, eventId });
+
+    // Remove the achievement if it exists
+    if (achievementId) {
+      try {
+        const achievement = await Achievement.findOne({ userId, achievementId });
+        if (achievement) {
+          await Achievement.deleteOne({ userId, achievementId });
+        }
+      } catch (achError) {
+        console.error('Error removing achievement (non-fatal):', achError.message);
+      }
+    }
+
+    // Deduct points from user's total points
+    try {
+      const pointsDoc = await RewardPoints.findOne({ userId });
+      if (pointsDoc) {
+        const currentPoints = pointsDoc.totalPoints || 0;
+        const newPoints = Math.max(0, currentPoints - pointsToDeduct); // Don't go below 0
+        
+        await RewardPoints.findByIdAndUpdate(pointsDoc._id, {
+          totalPoints: newPoints,
+          updatedAt: new Date()
+        });
+      }
+    } catch (pointsError) {
+      console.error('Error deducting points (non-fatal):', pointsError.message);
+      // Continue even if points deduction fails
+    }
 
     // Get remaining attended events (using lean() and Set for distinct)
     const attendanceResult = await EventAttendance.find({ userId });
     const attendances = await attendanceResult.lean();
     const attendedEventIds = [...new Set(attendances.map(a => a.eventId).filter(id => id))];
+
+    // Get updated total points
+    let currentTotalPoints = 0;
+    try {
+      const totalPointsResult = await RewardPoints.findOne({ userId });
+      currentTotalPoints = totalPointsResult ? (totalPointsResult.totalPoints || 0) : 0;
+    } catch (pointsError) {
+      // Continue without total points
+    }
 
     res.json({
       success: true,
@@ -342,6 +406,10 @@ router.delete('/events/:eventId/attend', async (req, res) => {
         eventId,
         userId,
         attendedEvents: attendedEventIds,
+        rewards: {
+          pointsDeducted: pointsToDeduct,
+          totalPoints: currentTotalPoints,
+        },
       },
     });
   } catch (error) {

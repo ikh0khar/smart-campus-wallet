@@ -1349,8 +1349,8 @@
     },
     {
       "userId": "U001",
-      "totalPoints": 3000,
-      "updatedAt": "2025-11-16T09:13:30.940Z",
+      "totalPoints": 2700,
+      "updatedAt": "2025-11-16T09:26:26.194Z",
       "_id": "id_1763282093786_oenkcenqk",
       "createdAt": "2025-11-16T08:34:53.786Z"
     }
@@ -1384,7 +1384,7 @@
       "lastDate": "2025-11-16",
       "_id": "id_1763283121793_ta9i0t09i",
       "createdAt": "2025-11-16T08:52:01.793Z",
-      "updatedAt": "2025-11-16T09:14:36.491Z"
+      "updatedAt": "2025-11-16T09:26:25.403Z"
     },
     {
       "userId": "U001",
@@ -1481,24 +1481,6 @@
     },
     {
       "userId": "U001",
-      "achievementId": "FREE_EVENT_E002",
-      "pointsEarned": 150,
-      "earnedAt": "2025-11-16T09:06:55.791Z",
-      "_id": "id_1763284015791_ti2o27m0k",
-      "createdAt": "2025-11-16T09:06:55.791Z",
-      "updatedAt": "2025-11-16T09:06:55.791Z"
-    },
-    {
-      "userId": "U001",
-      "achievementId": "FREE_EVENT_E003",
-      "pointsEarned": 150,
-      "earnedAt": "2025-11-16T09:07:07.066Z",
-      "_id": "id_1763284027066_2gqr8cm9v",
-      "createdAt": "2025-11-16T09:07:07.066Z",
-      "updatedAt": "2025-11-16T09:07:07.066Z"
-    },
-    {
-      "userId": "U001",
       "achievementId": "ACADEMIC_EVENT_E005",
       "pointsEarned": 300,
       "earnedAt": "2025-11-16T09:07:55.716Z",
@@ -1545,6 +1527,6 @@
   ],
   "_meta": {
     "createdAt": "2025-11-16T07:28:48.253Z",
-    "lastModified": "2025-11-16T09:14:37.151Z"
+    "lastModified": "2025-11-16T09:26:26.194Z"
   }
 }
