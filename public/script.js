@@ -44,10 +44,17 @@ async function initializeAPIIntegration() {
         console.error('❌ API Connection Error:', error);
     }
 
-    // Load data when sections are visible
-    loadBudgetingData();
-    loadActivityData();
-    loadRewardsData();
+    // Load data when sections are visible (only if sections exist on current page)
+    // Only load budgeting data if we're on the budgeting page
+    if (window.location.pathname === '/budgeting.html' || window.location.pathname === '/budgeting.html') {
+        loadBudgetingData();
+    }
+    
+    // Only load activity and rewards if on homepage
+    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+        loadActivityData();
+        loadRewardsData();
+    }
 }
 
 // Budgeting and Spending API Integration
