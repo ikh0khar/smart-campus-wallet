@@ -115,13 +115,13 @@ app.use((err, req, res, next) => {
   }
 });
 
-// Disable Express default 404 handler and create custom one
-// This MUST be after all routes
+// 404 handler for API routes - must be after all routes but before static files
 app.use((req, res, next) => {
   if (req.path && req.path.startsWith('/api/')) {
-    // API route not found - return JSON
+    // API route not found - return JSON (Express default handler would return HTML)
+    console.log('404 - API route not found:', req.method, req.originalUrl);
     res.setHeader('Content-Type', 'application/json');
-    return res.status(404).json({
+    res.status(404).json({
       success: false,
       message: `API endpoint not found: ${req.method} ${req.originalUrl}`,
       availableEndpoints: [
@@ -135,9 +135,11 @@ app.use((req, res, next) => {
         'GET /api/rewards/summary/:userId'
       ]
     });
+    // Don't call next() - we've handled the response
+  } else {
+    // For non-API routes, let it continue to static file serving
+    next();
   }
-  // For non-API routes, let it continue to static file serving
-  next();
 });
 
 // Serve static files from public directory (must be last, after API routes)
