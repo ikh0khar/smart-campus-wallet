@@ -100,6 +100,10 @@ async function loadBudgetingData() {
         const categoriesResponse = await fetch(`${API_BASE_URL}/transactions/categories`);
         const categoriesData = await categoriesResponse.json();
         
+        // Fetch trends data for line chart
+        const trendsResponse = await fetch(`${API_BASE_URL}/transactions/trends?period=monthly`);
+        const trendsData = await trendsResponse.json();
+        
         if (summaryData.success && transactionsData.success && categoriesData.success) {
             let html = '<div class="budget-dashboard">';
             
@@ -111,10 +115,25 @@ async function loadBudgetingData() {
             html += `<div class="summary-card"><h3>Daily Average</h3><p class="amount">$${summaryData.data.dailyAverage.toFixed(2)}</p></div>`;
             html += '</div>';
             
-            // Category breakdown
+            // Charts section
+            html += '<div class="charts-section">';
+            
+            // Pie Chart - Spending by Category
             if (categoriesData.data && categoriesData.data.length > 0) {
-                html += '<div class="category-breakdown"><h3>Spending by Category</h3><ul class="category-list">';
-                categoriesData.data.slice(0, 5).forEach(cat => {
+                html += '<div class="chart-container"><h3>Spending by Category</h3><canvas id="categoryPieChart"></canvas></div>';
+            }
+            
+            // Line Chart - Spending Trends
+            if (trendsData.success && trendsData.data && trendsData.data.length > 0) {
+                html += '<div class="chart-container"><h3>Monthly Spending Trends</h3><canvas id="trendsLineChart"></canvas></div>';
+            }
+            
+            html += '</div>';
+            
+            // Category breakdown list
+            if (categoriesData.data && categoriesData.data.length > 0) {
+                html += '<div class="category-breakdown"><h3>Category Details</h3><ul class="category-list">';
+                categoriesData.data.forEach(cat => {
                     html += `<li><span class="category-name">${cat.category}</span> <span class="category-amount">$${cat.amount.toFixed(2)} (${cat.percentage.toFixed(1)}%)</span></li>`;
                 });
                 html += '</ul></div>';
@@ -123,7 +142,7 @@ async function loadBudgetingData() {
             // Recent transactions
             if (transactionsData.data && transactionsData.data.length > 0) {
                 html += '<div class="recent-transactions"><h3>Recent Transactions</h3><ul class="transaction-list">';
-                transactionsData.data.slice(0, 5).forEach(tx => {
+                transactionsData.data.slice(0, 10).forEach(tx => {
                     html += `<li><span class="tx-desc">${tx.description || tx.merchant || 'Transaction'}</span> <span class="tx-amount">$${tx.amount.toFixed(2)}</span> <span class="tx-category">${tx.category}</span></li>`;
                 });
                 html += '</ul></div>';
@@ -131,12 +150,172 @@ async function loadBudgetingData() {
             
             html += '</div>';
             contentDiv.innerHTML = html;
-            console.log('✅ Budgeting data loaded and displayed');
+            
+            // Create charts after HTML is inserted
+            if (categoriesData.data && categoriesData.data.length > 0) {
+                createCategoryPieChart(categoriesData.data);
+            }
+            
+            if (trendsData.success && trendsData.data && trendsData.data.length > 0) {
+                createTrendsLineChart(trendsData.data);
+            }
+            
+            console.log('✅ Budgeting data loaded and displayed with charts');
         }
     } catch (error) {
         console.error('❌ Budgeting API Error:', error);
         contentDiv.innerHTML = `<div class="error">Error loading budgeting data: ${error.message}</div>`;
     }
+}
+
+// Create Pie Chart for Spending by Category
+function createCategoryPieChart(categoryData) {
+    const ctx = document.getElementById('categoryPieChart');
+    if (!ctx) return;
+    
+    // Color palette
+    const colors = [
+        '#bd3346', '#4CAF50', '#2196F3', '#FF9800', '#9C27B0',
+        '#00BCD4', '#FFC107', '#795548', '#607D8B', '#E91E63'
+    ];
+    
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: categoryData.map(cat => cat.category.charAt(0).toUpperCase() + cat.category.slice(1)),
+            datasets: [{
+                label: 'Spending',
+                data: categoryData.map(cat => cat.amount),
+                backgroundColor: colors.slice(0, categoryData.length),
+                borderColor: '#1a1a1a',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        color: '#fff',
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            family: "'Inter', sans-serif"
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#bd3346',
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = '$' + context.parsed.toFixed(2);
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1) + '%';
+                            return label + ': ' + value + ' (' + percentage + ')';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Create Line Chart for Spending Trends
+function createTrendsLineChart(trendsData) {
+    const ctx = document.getElementById('trendsLineChart');
+    if (!ctx) return;
+    
+    // Sort by date
+    const sortedData = [...trendsData].sort((a, b) => a.date.localeCompare(b.date));
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: sortedData.map(item => {
+                // Format date for display
+                const dateParts = item.date.split('-');
+                if (dateParts.length === 2) {
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return monthNames[parseInt(dateParts[1]) - 1] + ' ' + dateParts[0];
+                }
+                return item.date;
+            }),
+            datasets: [{
+                label: 'Spending',
+                data: sortedData.map(item => item.amount),
+                borderColor: '#bd3346',
+                backgroundColor: 'rgba(189, 51, 70, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#bd3346',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#bd3346',
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            return 'Spending: $' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#ccc',
+                        font: {
+                            size: 11,
+                            family: "'Inter', sans-serif"
+                        },
+                        callback: function(value) {
+                            return '$' + value.toFixed(0);
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: '#ccc',
+                        font: {
+                            size: 11,
+                            family: "'Inter', sans-serif"
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
 }
 
 // Global variables for activity page
