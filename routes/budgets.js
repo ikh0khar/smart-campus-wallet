@@ -301,16 +301,31 @@ router.post('/check-rewards/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     
-    // Get all active budgets for user
-    const budgets = await Budget.find({ userId, isActive: true }).lean();
+    // Get all active budgets for user (if no userId specified, get all active budgets)
+    const query = { isActive: true };
+    if (userId && userId !== 'undefined') {
+      query.userId = userId;
+    }
+    
+    const budgets = await Budget.find(query).lean();
+    
+    // Get user points for response
+    const { getUserPoints } = require('../utils/rewardsMongo');
+    let totalPoints = 0;
+    try {
+      totalPoints = await getUserPoints(userId);
+    } catch (pointsError) {
+      console.warn('Could not get user points:', pointsError.message);
+    }
     
     if (budgets.length === 0) {
       return res.json({
         success: true,
-        message: 'No active budgets found',
+        message: 'No active budgets found. Create a budget to start earning points!',
         data: {
+          budgetsChecked: [],
           pointsEarned: 0,
-          totalPoints: await require('../utils/rewardsMongo').getUserPoints(userId),
+          totalPoints: totalPoints,
         },
       });
     }
@@ -320,49 +335,73 @@ router.post('/check-rewards/:userId', async (req, res) => {
     
     // Check each budget
     for (const budget of budgets) {
-      const spent = await calculateSpent(budget);
-      const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
-      const status = percentage >= 100 ? 'exceeded' : percentage >= 80 ? 'warning' : 'good';
-      
-      const budgetProgress = {
-        budget,
-        spent,
-        percentage,
-        status,
-      };
-      
-      // Award points if under budget
-      const achievement = await checkBudgetAchievement(userId, budgetProgress);
-      if (achievement && achievement.newAchievement) {
-        totalPointsEarned += achievement.pointsEarned;
+      try {
+        const spent = await calculateSpent(budget);
+        const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
+        const status = percentage >= 100 ? 'exceeded' : percentage >= 80 ? 'warning' : 'good';
+        
+        // Ensure budget object has category
+        const budgetWithCategory = {
+          ...budget,
+          category: budget.category || 'other'
+        };
+        
+        const budgetProgress = {
+          budget: budgetWithCategory,
+          spent,
+          percentage,
+          status,
+        };
+        
+        // Award points if under budget
+        let achievement = null;
+        try {
+          achievement = await checkBudgetAchievement(userId, budgetProgress);
+        } catch (achError) {
+          console.warn(`Error checking achievement for budget ${budget._id}:`, achError.message);
+          // Continue with other budgets even if one fails
+        }
+        
+        if (achievement && achievement.newAchievement) {
+          totalPointsEarned += achievement.pointsEarned || 0;
+        }
+        
+        // Update total points after award
+        try {
+          totalPoints = await getUserPoints(userId);
+        } catch (pointsError) {
+          // Use previous total if we can't get updated one
+        }
+        
+        checkedBudgets.push({
+          budgetId: budget._id.toString(),
+          name: budget.name,
+          category: normalizeCategory(budget.category || 'other'),
+          percentage: parseFloat(percentage.toFixed(2)),
+          status,
+          pointsEarned: achievement && achievement.newAchievement ? (achievement.pointsEarned || 0) : 0,
+        });
+      } catch (budgetError) {
+        console.error(`Error processing budget ${budget._id}:`, budgetError.message);
+        // Continue with other budgets
       }
-      
-      checkedBudgets.push({
-        budgetId: budget._id.toString(),
-        name: budget.name,
-        category: budget.category,
-        percentage,
-        status,
-        pointsEarned: achievement && achievement.newAchievement ? achievement.pointsEarned : 0,
-      });
     }
-    
-    const totalPoints = await require('../utils/rewardsMongo').getUserPoints(userId);
     
     res.json({
       success: true,
-      message: totalPointsEarned > 0 ? 'Points awarded for staying under budget!' : 'No new budget rewards earned',
+      message: totalPointsEarned > 0 ? `Points awarded for staying under budget! Earned ${totalPointsEarned} points.` : 'No new budget rewards earned (already earned or over budget)',
       data: {
         budgetsChecked: checkedBudgets,
         pointsEarned: totalPointsEarned,
-        totalPoints,
+        totalPoints: totalPoints,
       },
     });
   } catch (error) {
     console.error('Check budget rewards error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: error.message || 'Server error while checking budget rewards',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined,
     });
   }
 });

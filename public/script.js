@@ -793,10 +793,10 @@ async function setTotalClassDays() {
 // Check budget and award points
 async function checkBudgetRewards() {
     try {
-        const userId = defaultUserId;
+        const userId = defaultUserId || 'user123';
         const statusEl = document.getElementById('budget-status');
         if (statusEl) {
-            statusEl.textContent = 'Checking...';
+            statusEl.textContent = 'Checking budgets...';
             statusEl.style.color = '#888';
         }
         
@@ -807,26 +807,31 @@ async function checkBudgetRewards() {
             }
         });
         
-        if (response.ok) {
-            const data = await response.json();
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
             const pointsEarned = data.data?.pointsEarned || 0;
             const totalPoints = data.data?.totalPoints || 0;
+            const budgetsChecked = data.data?.budgetsChecked || [];
             
-            if (pointsEarned > 0) {
+            if (budgetsChecked.length === 0) {
+                updateBudgetStatus(`No active budgets found. Create a budget to start earning points! | Total: ${totalPoints} pts`);
+            } else if (pointsEarned > 0) {
                 updateBudgetStatus(`✓ Earned ${pointsEarned} points for staying under budget! | Total: ${totalPoints} pts`);
                 // Refresh rewards display
                 if (window.location.pathname === '/rewards.html' && typeof loadRewardsData === 'function') {
                     setTimeout(loadRewardsData, 500);
                 }
             } else {
-                updateBudgetStatus(`No new rewards (already earned or over budget) | Total: ${totalPoints} pts`);
+                updateBudgetStatus(`${data.message || 'No new rewards'} | Total: ${totalPoints} pts`);
             }
         } else {
-            updateBudgetStatus('Failed to check budget');
+            const errorMessage = data.message || 'Failed to check budget';
+            updateBudgetStatus(`Error: ${errorMessage}`);
         }
     } catch (error) {
         console.error('Error checking budget rewards:', error);
-        updateBudgetStatus('Error: Please try again');
+        updateBudgetStatus(`Error: ${error.message || 'Please try again'}`);
     }
 }
 
