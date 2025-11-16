@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { Event, EventAttendance, ClassAttendance, ActivityLog } = require('../models');
-const { updateStreak, awardEventPoints, awardActivityPoints, awardClassAttendancePoints } = require('../utils/rewardsMongo');
+// Use JSON database instead of MongoDB
+const { Event, EventAttendance, ClassAttendance, ActivityLog } = require('../db/json-db');
+const { updateStreak, awardEventPoints, awardActivityPoints, awardClassAttendancePoints } = require('../utils/rewardsJson');
 
 // ============================================
 // EVENTS ENDPOINTS
@@ -12,17 +13,6 @@ const { updateStreak, awardEventPoints, awardActivityPoints, awardClassAttendanc
 // @access  Public
 router.get('/events', async (req, res) => {
   try {
-    // Check MongoDB connection
-    const mongoose = require('mongoose');
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({
-        success: false,
-        message: 'Database not connected. Please check MongoDB connection.',
-        error: 'MongoDB connection required',
-        diagnostic: '/api/diagnostic'
-      });
-    }
-
     const { category, isFree, userId } = req.query;
 
     // Build MongoDB query
@@ -31,8 +21,8 @@ router.get('/events', async (req, res) => {
       query.category = new RegExp(`^${category}$`, 'i');
     }
 
-    // Get events from MongoDB
-    let events = await Event.find(query).lean();
+    // Get events from JSON database
+    let events = await (await Event.find(query)).lean();
 
     // Filter by free/paid
     if (isFree !== undefined) {
@@ -42,7 +32,7 @@ router.get('/events', async (req, res) => {
 
     // Add attendance status if userId provided
     if (userId) {
-      const attendedEvents = await EventAttendance.find({ userId }).distinct('eventId');
+      const attendedEvents = await EventAttendance.distinct('eventId', { userId });
       events = events.map(event => ({
         ...event,
         eventId: event.eventId, // Keep original eventId
@@ -169,24 +159,19 @@ router.post('/events/:eventId/attend', async (req, res) => {
     }
 
     // Create or check attendance
-    let attendance;
-    try {
-      attendance = await EventAttendance.findOneAndUpdate(
-        { userId, eventId },
-        { userId, eventId, attendedAt: new Date() },
-        { upsert: true, new: true }
-      );
-    } catch (error) {
-      if (error.code === 11000) {
-        // Already attending
-        attendance = await EventAttendance.findOne({ userId, eventId });
-      } else {
-        throw error;
-      }
+    let attendance = await EventAttendance.findOneAndUpdate(
+      { userId, eventId },
+      { userId, eventId, attendedAt: new Date() },
+      { upsert: true, new: true }
+    );
+    
+    // If not found or created, try to find existing
+    if (!attendance) {
+      attendance = await EventAttendance.findOne({ userId, eventId });
     }
 
     // Get all attended events
-    const attendedEventIds = await EventAttendance.find({ userId }).distinct('eventId');
+    const attendedEventIds = await EventAttendance.distinct('eventId', { userId });
 
     // Update event streak and award points
     const streakResult = await updateStreak(userId, 'events', new Date().toISOString().split('T')[0]);
@@ -272,8 +257,7 @@ router.get('/class-attendance/:userId', async (req, res) => {
     // Get or create class attendance
     let attendance = await ClassAttendance.findOne({ userId });
     if (!attendance) {
-      attendance = new ClassAttendance({ userId });
-      await attendance.save();
+      attendance = await ClassAttendance.create({ userId, totalDays: 0, attendedDays: 0, dates: [] });
     }
 
     // Calculate attendance percentage
@@ -318,14 +302,18 @@ router.post('/class-attendance/:userId', async (req, res) => {
     // Get or create class attendance
     let attendance = await ClassAttendance.findOne({ userId });
     if (!attendance) {
-      attendance = new ClassAttendance({ userId });
+      attendance = await ClassAttendance.create({ userId, totalDays: 0, attendedDays: 0, dates: [] });
     }
 
     // Add date if not already present
     if (!attendance.dates.includes(dateStr)) {
-      attendance.dates.push(dateStr);
-      attendance.attendedDays = attendance.dates.length;
-      await attendance.save();
+      const updatedDates = [...(attendance.dates || []), dateStr];
+      await ClassAttendance.findByIdAndUpdate(attendance._id, {
+        dates: updatedDates,
+        attendedDays: updatedDates.length
+      });
+      attendance.dates = updatedDates;
+      attendance.attendedDays = updatedDates.length;
     }
 
     const percentage = attendance.totalDays > 0
@@ -384,11 +372,10 @@ router.put('/class-attendance/:userId/total', async (req, res) => {
     // Get or create class attendance
     let attendance = await ClassAttendance.findOne({ userId });
     if (!attendance) {
-      attendance = new ClassAttendance({ userId });
+      attendance = await ClassAttendance.create({ userId, totalDays: 0, attendedDays: 0, dates: [] });
     }
 
-    attendance.totalDays = totalDays;
-    await attendance.save();
+    attendance = await ClassAttendance.findByIdAndUpdate(attendance._id, { totalDays });
 
     const percentage = attendance.totalDays > 0
       ? (attendance.attendedDays / attendance.totalDays) * 100

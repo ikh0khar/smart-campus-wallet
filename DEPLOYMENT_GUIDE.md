@@ -1,174 +1,196 @@
-# Full-Stack Deployment Guide
+# Complete Deployment Guide - JSON Database
 
-## Your App is Already One Site! 🎉
+This app now uses a **JSON file-based database** instead of MongoDB. This means:
 
-Your Express.js app **already serves both frontend and backend together**:
-- Backend API: `/api/*` routes
-- Frontend: Served from `public/` folder
-- Single server: `server.js` handles everything
+✅ **No external database setup needed**
+✅ **Works on Railway, Render, Netlify Functions, or any Node.js host**
+✅ **Data persists in `data/db/database.json`**
+✅ **Can deploy frontend + backend together or separately**
 
-You just need to deploy the **entire app** to a platform that supports Node.js.
+## Quick Start
 
-## Option 1: Railway (Recommended - Easiest)
+### 1. Local Development
 
-Railway is perfect for full-stack Node.js apps and has a free tier.
-
-### Steps:
-
-1. **Go to Railway:**
-   - Visit https://railway.app/
-   - Sign up/login with GitHub
-
-2. **Create New Project:**
-   - Click "New Project"
-   - Select "Deploy from GitHub repo"
-   - Choose your repository: `ikh0khar/smart-campus-wallet`
-   - Select branch: `main-v2`
-
-3. **Add MongoDB (Free):**
-   - Click "+ New" in your project
-   - Select "Database" → "MongoDB"
-   - Railway will create a free MongoDB instance
-   - Copy the connection string
-
-4. **Configure Environment Variables:**
-   - In your service, go to "Variables" tab
-   - Add:
-     ```
-     MONGODB_URI=<paste the connection string from step 3>
-     PORT=3000
-     NODE_ENV=production
-     ```
-
-5. **Deploy:**
-   - Railway auto-detects Node.js apps
-   - It will automatically run `npm install` and `npm start`
-   - Your app will be live in 2-3 minutes!
-
-6. **Get Your URL:**
-   - Railway gives you a URL like: `https://smart-campus-wallet-production.up.railway.app`
-   - Click on it to see your full site (frontend + backend)
-
-7. **Custom Domain (Optional):**
-   - In Railway dashboard → Settings → Domains
-   - Click "Generate Domain" or add your own
-   - Follow DNS setup instructions
-
-### Update Frontend API URL (After Deployment)
-
-After deploying, update `public/script.js` to use Railway's URL:
-
-```javascript
-const API_BASE_URL = (() => {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return 'http://localhost:3000/api';
-    }
-    // Update this with your Railway URL
-    return 'https://smart-campus-wallet-production.up.railway.app/api';
-})();
+```bash
+npm install
+npm start
 ```
 
-Or better yet, keep it dynamic:
+The server will:
+- Create `data/db/database.json` automatically
+- Serve frontend from `public/` folder
+- API available at `http://localhost:3000/api`
 
-```javascript
-const API_BASE_URL = window.location.origin + '/api';
+### 2. Import Sample Data
+
+```bash
+# Import transactions from CSV
+npm run import data/wallet_transactions_sample.csv
+
+# Seed budgets and events
+npm run seed:budgets
+npm run seed:events
 ```
 
-This will automatically use the same domain (Railway URL) for API calls.
+### 3. Deploy to Railway (Recommended)
 
----
+Railway can host both frontend and backend together:
 
-## Option 2: Render (Also Great)
+1. **Connect GitHub repo** to Railway
+2. **Select branch:** `main-v2`
+3. **Build settings:**
+   - Build command: (leave empty)
+   - Start command: `npm start`
+4. **Environment variables:**
+   - `NODE_ENV=production`
+   - `PORT` (auto-set by Railway)
+5. **Deploy!**
 
-Render also supports full-stack apps and has a free tier.
+**That's it!** No MongoDB setup needed.
 
-### Steps:
+#### Data Persistence on Railway
 
-1. **Go to Render:**
-   - Visit https://render.com/
-   - Sign up/login with GitHub
+- Data is stored in `data/db/database.json`
+- On Railway, this file persists in the container
+- **Note:** For production, consider backing up `data/db/database.json` periodically
 
-2. **Create New Web Service:**
-   - Click "New +" → "Web Service"
-   - Connect your GitHub repository
-   - Select repo: `ikh0khar/smart-campus-wallet`
+### 4. Deploy to Netlify (Frontend Only)
+
+If you want to deploy frontend separately:
+
+1. **Update `public/config.js`:**
+   ```javascript
+   window.APP_CONFIG = {
+       API_BASE_URL: 'https://your-railway-backend.up.railway.app/api'
+   };
+   ```
+
+2. **Deploy to Netlify:**
+   - Connect GitHub repo
    - Branch: `main-v2`
+   - Build command: (empty)
+   - Publish directory: `public`
 
-3. **Configure Service:**
-   - **Name:** smart-campus-wallet
-   - **Environment:** Node
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-   - **Plan:** Free (or paid for better performance)
+3. **Update Railway CORS:**
+   - Set `FRONTEND_URL=https://your-site.netlify.app` in Railway
 
-4. **Add MongoDB:**
-   - Click "New +" → "MongoDB"
-   - Choose free plan
-   - Copy the connection string
+### 5. Deploy to Render
 
-5. **Add Environment Variables:**
-   - In your web service → Environment
-   - Add:
-     ```
-     MONGODB_URI=<connection string from step 4>
-     NODE_ENV=production
-     PORT=10000
-     ```
-   - Note: Render uses port 10000 by default
+Same as Railway:
 
-6. **Update PORT in server.js:**
-   - Render sets `PORT` automatically, but ensure `server.js` uses `process.env.PORT`
+1. **New Web Service**
+2. **Connect GitHub repo**
+3. **Settings:**
+   - Build command: (empty)
+   - Start command: `npm start`
+4. **Environment:**
+   - `NODE_ENV=production`
+5. **Deploy!**
 
-7. **Deploy:**
-   - Click "Create Web Service"
-   - Wait for deployment (3-5 minutes)
-   - Your site will be at: `https://smart-campus-wallet.onrender.com`
+## File Structure
 
-8. **Custom Domain:**
-   - Settings → Custom Domains
-   - Add your domain and configure DNS
+```
+smart-campus-wallet/
+├── public/              # Frontend files (HTML, CSS, JS)
+│   ├── index.html
+│   ├── budgeting.html
+│   ├── activity.html
+│   ├── rewards.html
+│   ├── config.js        # Backend API URL config
+│   └── script.js
+├── routes/              # API routes
+│   ├── transactions.js
+│   ├── budgets.js
+│   ├── activities.js
+│   └── rewards.js
+├── db/
+│   └── json-db.js       # JSON file database
+├── data/
+│   └── db/
+│       └── database.json # Actual data storage
+├── server.js            # Express server
+└── package.json
+```
+
+## Database Location
+
+**Data is stored in:** `data/db/database.json`
+
+This file contains all:
+- Users
+- Transactions
+- Budgets
+- Events
+- Event Attendances
+- Class Attendances
+- Activity Logs
+- Reward Points
+- Streaks
+- Achievements
+
+## Backing Up Data
+
+To backup your database:
+
+```bash
+# Copy the database file
+cp data/db/database.json backup/database-$(date +%Y%m%d).json
+```
+
+Or commit it to git (for small datasets):
+```bash
+git add data/db/database.json
+git commit -m "Backup database"
+```
+
+## Environment Variables
+
+### Required
+- None! JSON database works out of the box.
+
+### Optional
+- `PORT` - Server port (default: 3000)
+- `NODE_ENV` - Environment (default: development)
+- `FRONTEND_URL` - For CORS if deploying frontend separately
+
+## Troubleshooting
+
+### Issue: No data loading
+
+**Check:**
+1. Is `data/db/database.json` created? (auto-created on first run)
+2. Did you import sample data? (`npm run import`)
+3. Check server logs for errors
+
+### Issue: Changes not persisting
+
+**Fix:**
+- Make sure `data/db/` directory is writable
+- Check file permissions: `chmod 755 data/db`
+
+### Issue: Database file too large
+
+**For production:**
+- Consider migrating to MongoDB Atlas if data grows
+- Or use external JSON storage (S3, etc.)
+
+## Advantages of JSON Database
+
+✅ **Zero setup** - Works immediately
+✅ **No external services** - No MongoDB connection needed
+✅ **Easy backups** - Just copy one file
+✅ **Works anywhere** - Any Node.js host
+✅ **Fast for small datasets** - Perfect for demo/development
+✅ **Version control friendly** - Can commit data to git
+
+## Migration Path
+
+If you outgrow JSON database:
+
+1. **Keep JSON as fallback** - Database abstraction layer
+2. **Add MongoDB option** - Use `MONGODB_URI` env var to switch
+3. **Gradual migration** - Export JSON → Import to MongoDB
 
 ---
 
-## Option 3: Vercel (If You Prefer)
-
-Vercel is great but requires using serverless functions for the backend. More setup required.
-
----
-
-## Quick Comparison
-
-| Platform | Free Tier | Ease of Setup | Best For |
-|----------|-----------|---------------|----------|
-| **Railway** | ✅ Yes | ⭐⭐⭐⭐⭐ | Full-stack apps |
-| **Render** | ✅ Yes | ⭐⭐⭐⭐ | Full-stack apps |
-| **Netlify** | ✅ Yes | ⭐⭐ | Frontend only (needs workarounds) |
-| **Vercel** | ✅ Yes | ⭐⭐⭐ | Requires serverless functions |
-
-## Recommended: Railway
-
-Railway is the easiest for your setup because:
-- ✅ Auto-detects Node.js apps
-- ✅ Free MongoDB included
-- ✅ Simple one-click deployment
-- ✅ Custom domains included
-- ✅ HTTPS automatic
-- ✅ Easy environment variable management
-
-## After Deployment Checklist
-
-- [ ] Deploy to Railway or Render
-- [ ] MongoDB connected and working
-- [ ] Frontend loads at root URL
-- [ ] API endpoints work (`/api/health`, `/api/transactions`, etc.)
-- [ ] All pages load (`/budgeting.html`, `/activity.html`, `/rewards.html`)
-- [ ] Update `API_BASE_URL` if needed (or use relative URLs)
-- [ ] Test custom domain (optional)
-- [ ] Import initial data using scripts
-
-## Need Help?
-
-- Railway Docs: https://docs.railway.app/
-- Render Docs: https://render.com/docs
-- Your app is ready - just pick a platform and deploy! 🚀
-
+**You're ready to deploy! No MongoDB setup needed!** 🚀

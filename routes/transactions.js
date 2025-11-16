@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { Transaction, User } = require('../models');
+// Use JSON database instead of MongoDB
+const { Transaction, User } = require('../db/json-db');
 
 // Category mapping from CSV to our API format
 const categoryMap = {
@@ -21,17 +22,6 @@ const normalizeCategory = (category) => {
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    // Check MongoDB connection
-    const mongoose = require('mongoose');
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({
-        success: false,
-        message: 'Database not connected. Please check MongoDB connection.',
-        error: 'MongoDB connection required',
-        diagnostic: '/api/diagnostic'
-      });
-    }
-
     const { category, startDate, endDate, minAmount, maxAmount, userId, sortBy = 'date', sortOrder = 'desc' } = req.query;
 
     // Build MongoDB query
@@ -81,7 +71,9 @@ router.get('/', async (req, res) => {
     sort[sortField] = sortOrder === 'asc' ? 1 : -1;
 
     // Execute query
-    let transactions = await Transaction.find(query).sort(sort).lean();
+    const findResult = await Transaction.find(query);
+    const sortResult = findResult.sort(sort);
+    let transactions = await sortResult.lean();
 
     // Normalize categories in response and transform to match API format
     transactions = transactions.map(t => ({
@@ -145,20 +137,16 @@ router.get('/summary', async (req, res) => {
       }
     }
 
-    // Use aggregation for summary
-    const summary = await Transaction.aggregate([
-      { $match: query },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$amount' },
-          count: { $sum: 1 },
-          average: { $avg: '$amount' }
-        }
-      }
-    ]);
-
-    const result = summary[0] || { total: 0, count: 0, average: 0 };
+    // Get transactions and calculate summary (JSON DB doesn't have aggregation)
+    const transactions = await (await Transaction.find(query)).lean();
+    
+    const result = transactions.reduce((acc, t) => {
+      acc.total += parseFloat(t.amount || 0);
+      acc.count += 1;
+      return acc;
+    }, { total: 0, count: 0 });
+    
+    result.average = result.count > 0 ? result.total / result.count : 0;
 
     // Calculate time period
     const days = startDate && endDate
@@ -213,7 +201,7 @@ router.get('/categories', async (req, res) => {
     }
 
     // Get transactions and group by category
-    const transactions = await Transaction.find(query).lean();
+    const transactions = await (await Transaction.find(query)).lean();
 
     // Normalize categories and group
     const categoryMap = {};
@@ -421,7 +409,7 @@ router.post('/', async (req, res) => {
     }
 
     // Create transaction
-    const transaction = new Transaction({
+    const transaction = await Transaction.create({
       transactionId,
       userId,
       merchant: merchant.trim(),
@@ -432,14 +420,12 @@ router.post('/', async (req, res) => {
       date: new Date(date),
     });
 
-    await transaction.save();
-
     // Update user balance if user exists
     try {
       const user = await User.findOne({ userId });
       if (user) {
-        user.balance = (user.balance || 0) - parseFloat(amount);
-        await user.save();
+        const updatedBalance = (user.balance || 0) - parseFloat(amount);
+        await User.findByIdAndUpdate(user._id, { balance: updatedBalance });
       }
     } catch (userError) {
       console.warn('Could not update user balance:', userError.message);
@@ -504,9 +490,10 @@ router.put('/:id', async (req, res) => {
     // Store original amount for user balance update
     const originalAmount = transaction.amount;
 
-    // Update fields if provided
-    if (merchant !== undefined) transaction.merchant = merchant.trim();
-    if (category !== undefined) transaction.category = category.trim();
+    // Build update object
+    const update = {};
+    if (merchant !== undefined) update.merchant = merchant.trim();
+    if (category !== undefined) update.category = category.trim();
     if (amount !== undefined) {
       if (amount < 0) {
         return res.status(400).json({
@@ -514,13 +501,14 @@ router.put('/:id', async (req, res) => {
           message: 'Amount must be greater than or equal to 0',
         });
       }
-      transaction.amount = parseFloat(amount);
+      update.amount = parseFloat(amount);
     }
-    if (paymentMethod !== undefined) transaction.paymentMethod = paymentMethod.trim();
-    if (location !== undefined) transaction.location = location.trim();
-    if (date !== undefined) transaction.date = new Date(date);
+    if (paymentMethod !== undefined) update.paymentMethod = paymentMethod.trim();
+    if (location !== undefined) update.location = location.trim();
+    if (date !== undefined) update.date = new Date(date);
 
-    await transaction.save();
+    // Update transaction
+    const updated = await Transaction.findByIdAndUpdate(transaction._id, update);
 
     // Update user balance if amount changed
     if (amount !== undefined && amount !== originalAmount) {
@@ -528,14 +516,16 @@ router.put('/:id', async (req, res) => {
         const user = await User.findOne({ userId: transaction.userId });
         if (user) {
           const difference = originalAmount - parseFloat(amount);
-          user.balance = (user.balance || 0) + difference;
-          await user.save();
+          const newBalance = (user.balance || 0) + difference;
+          await User.findByIdAndUpdate(user._id, { balance: newBalance });
         }
       } catch (userError) {
         console.warn('Could not update user balance:', userError.message);
         // Don't fail the transaction update if user update fails
       }
     }
+    
+    const finalTransaction = updated || transaction;
 
     res.json({
       success: true,
@@ -594,8 +584,8 @@ router.delete('/:id', async (req, res) => {
     try {
       const user = await User.findOne({ userId: transaction.userId });
       if (user) {
-        user.balance = (user.balance || 0) + transaction.amount;
-        await user.save();
+        const newBalance = (user.balance || 0) + transaction.amount;
+        await User.findByIdAndUpdate(user._id, { balance: newBalance });
       }
     } catch (userError) {
       console.warn('Could not update user balance:', userError.message);
@@ -603,7 +593,7 @@ router.delete('/:id', async (req, res) => {
     }
 
     // Delete transaction
-    await Transaction.deleteOne({ _id: transaction._id });
+    await Transaction.findByIdAndDelete(transaction._id);
 
     res.json({
       success: true,

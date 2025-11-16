@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+// Use JSON database instead of MongoDB
 const {
   updateStreak,
   awardAchievement,
@@ -10,9 +11,11 @@ const {
   getUserStreaks,
   getUserAchievements,
   getRewardsSummary,
+  getPointsBreakdown,
   STREAK_POINTS,
   ACHIEVEMENT_POINTS,
-} = require('../utils/rewardsMongo');
+  ACTIVITY_POINTS,
+} = require('../utils/rewardsJson');
 
 // ============================================
 // POINTS ENDPOINTS

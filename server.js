@@ -1,20 +1,15 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./config/database');
 const transactionsRouter = require('./routes/transactions');
 const budgetsRouter = require('./routes/budgets');
 
 const app = express();
 
-// Connect to MongoDB (non-blocking - server will start even if MongoDB fails)
-// This is important for Railway deployment where MongoDB might take time to initialize
-connectDB().catch(err => {
-  console.error('⚠️  MongoDB connection error:', err.message);
-  console.error('⚠️  Server will continue, but database operations will fail until MongoDB is connected');
-  console.error('⚠️  Check MONGODB_URI environment variable and MongoDB service status');
-  // Don't exit - let server start and retry connection
-});
+// Initialize JSON database (no MongoDB needed!)
+const jsonDB = require('./db/json-db');
+jsonDB.loadDB();
+console.log('✅ JSON Database initialized (data/db/database.json)');
 
 // Middleware
 // CORS configuration - supports both same-domain and separate-domain deployments
@@ -98,51 +93,40 @@ app.use('/api/rewards', require('./routes/rewards'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  const mongoose = require('mongoose');
-  const dbStatus = mongoose.connection.readyState;
-  const dbStates = {
-    0: 'disconnected',
-    1: 'connected',
-    2: 'connecting',
-    3: 'disconnecting'
-  };
-  
+  const db = jsonDB.getDB();
   res.setHeader('Content-Type', 'application/json');
   res.json({ 
     status: 'OK', 
     message: 'Smart Campus Wallet API is running',
-    mongodb: {
-      connected: dbStatus === 1,
-      state: dbStates[dbStatus] || 'unknown',
-      uri: process.env.MONGODB_URI ? 'Set' : 'Not set'
+    database: {
+      type: 'JSON File Database',
+      connected: true,
+      location: 'data/db/database.json',
+      collections: Object.keys(db).filter(k => !k.startsWith('_')),
+      lastModified: db._meta?.lastModified || 'N/A'
     }
   });
 });
 
-// Diagnostic endpoint to check MongoDB connection
+// Diagnostic endpoint
 app.get('/api/diagnostic', (req, res) => {
-  const mongoose = require('mongoose');
-  const dbStatus = mongoose.connection.readyState;
-  const dbStates = {
-    0: 'disconnected',
-    1: 'connected',
-    2: 'connecting',
-    3: 'disconnecting'
-  };
+  const db = jsonDB.getDB();
+  const counts = {};
+  Object.keys(db).filter(k => !k.startsWith('_')).forEach(collection => {
+    counts[collection] = db[collection]?.length || 0;
+  });
   
   res.setHeader('Content-Type', 'application/json');
   res.json({
     server: 'running',
-    mongodb: {
-      uri: process.env.MONGODB_URI ? 'Set' : 'NOT SET',
-      state: dbStates[dbStatus] || 'unknown',
-      connected: dbStatus === 1,
-      host: mongoose.connection.host || 'N/A',
-      name: mongoose.connection.name || 'N/A'
+    database: {
+      type: 'JSON File Database',
+      connected: true,
+      location: 'data/db/database.json',
+      counts: counts,
+      lastModified: db._meta?.lastModified || 'N/A'
     },
-    message: dbStatus === 1 
-      ? 'Everything is working! MongoDB is connected.'
-      : 'MongoDB is not connected. Check MONGODB_URI environment variable and MongoDB service status.'
+    message: 'Everything is working! JSON database is connected.'
   });
 });
 
