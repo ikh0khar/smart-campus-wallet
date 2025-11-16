@@ -17,11 +17,12 @@ connectDB().catch(err => {
 });
 
 // Middleware
-// CORS configuration - allows requests from any origin (for development)
+// CORS configuration - supports both same-domain and separate-domain deployments
 app.use(cors({
-  origin: '*', // In production, specify your frontend URL
+  origin: process.env.FRONTEND_URL || '*', // Set FRONTEND_URL for separate deployment
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true, // Allow cookies/auth if needed
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

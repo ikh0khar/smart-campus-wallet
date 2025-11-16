@@ -1,13 +1,25 @@
 // API Configuration
-// Since frontend and backend are on the same server, use relative URLs
-// This works for both local development and production deployments
+// Supports both same-domain and separate-domain deployments
 const API_BASE_URL = (() => {
     // For local development, use localhost
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:3000/api';
     }
-    // For production, use the same origin (full-stack deployment)
-    // This means frontend and backend are on the same domain
+    
+    // Option 1: Use environment variable (set in Netlify/Vercel)
+    // Netlify: VITE_API_URL or REACT_APP_API_URL
+    // Vercel: NEXT_PUBLIC_API_URL
+    if (window.API_BACKEND_URL) {
+        return window.API_BACKEND_URL;
+    }
+    
+    // Option 2: Check for config.js file (for manual setup)
+    if (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) {
+        return window.APP_CONFIG.API_BASE_URL;
+    }
+    
+    // Option 3: Same-domain deployment (frontend and backend on same URL)
+    // This is the default for Railway/Render full-stack deployment
     return window.location.origin + '/api';
 })();
 
