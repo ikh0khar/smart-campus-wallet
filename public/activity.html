@@ -97,14 +97,14 @@
                         <div class="action-icon">🎓</div>
                         <h4 class="action-title">Class Attendance</h4>
                         <p class="action-description">Build streaks for consistent class attendance</p>
+                        <button class="action-btn" onclick="logClassAttendance()">Log Today's Attendance</button>
+                        <p class="action-status" id="class-status">Not logged today</p>
                         <div class="attendance-input">
-                            <button class="action-btn" onclick="logClassAttendance()">Log Today's Attendance</button>
                             <div class="input-group">
                                 <input type="number" id="total-days-input" placeholder="Total class days" min="1" class="input-field">
                                 <button class="action-btn-small" onclick="setTotalClassDays()">Set Total</button>
                             </div>
                         </div>
-                        <p class="action-status" id="class-status">Not logged today</p>
                     </div>
                     
                     <!-- Physical Activities Card -->
