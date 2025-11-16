@@ -139,87 +139,250 @@ async function loadBudgetingData() {
     }
 }
 
+// Global variables for activity page
+let allEvents = [];
+let defaultUserId = 'user123';
+
 // Activity API Integration
 async function loadActivityData() {
     const contentDiv = document.getElementById('activity-content');
     if (!contentDiv) return;
 
     try {
-        // Use a default userId for demo purposes (you can change this later)
-        const defaultUserId = 'user123';
+        // Fetch all events with user attendance status
+        const eventsResponse = await fetch(`${API_BASE_URL}/activities/events?userId=${defaultUserId}`);
+        const eventsData = await eventsResponse.json();
         
         // Fetch activity summary
         const summaryResponse = await fetch(`${API_BASE_URL}/activities/summary/${defaultUserId}`);
         const summaryData = await summaryResponse.json();
         
-        // Fetch events
-        const eventsResponse = await fetch(`${API_BASE_URL}/activities/events`);
-        const eventsData = await eventsResponse.json();
-        
-        if (summaryData.success) {
-            let html = '<div class="activity-dashboard">';
+        if (eventsData.success) {
+            // Store all events globally
+            allEvents = eventsData.data || [];
             
-            // Events section
-            if (summaryData.data.events && summaryData.data.events.totalAttended > 0) {
-                html += '<div class="activity-section"><h3>Events Attended</h3>';
-                html += `<p class="activity-stat">Total: ${summaryData.data.events.totalAttended} events</p>`;
-                if (summaryData.data.events.events && summaryData.data.events.events.length > 0) {
-                    html += '<ul class="timeline-list">';
-                    summaryData.data.events.events.slice(0, 10).forEach(event => {
-                        const eventDate = event.startTime ? new Date(event.startTime).toLocaleDateString() : 'Date TBD';
-                        html += `<li class="timeline-item">
-                            <span class="activity-type">📅 ${event.name || 'Event'}</span>
-                            <span class="activity-date">${eventDate}</span>
-                            ${event.location ? `<span class="activity-desc">📍 ${event.location}</span>` : ''}
-                        </li>`;
-                    });
-                    html += '</ul></div>';
-                }
-            }
+            // Store summaryData globally
+            window.summaryData = summaryData;
             
-            // Class Attendance section
-            if (summaryData.data.classAttendance) {
-                html += '<div class="activity-section"><h3>Class Attendance</h3>';
-                html += `<p class="activity-stat">${summaryData.data.classAttendance.attendedDays || 0} / ${summaryData.data.classAttendance.totalDays || 0} days (${(summaryData.data.classAttendance.percentage || 0).toFixed(1)}%)</p></div>`;
-            }
+            // Display events with current filter
+            displayEvents(allEvents, summaryData);
             
-            // Activities section (Gym, Sports, Walk, Run)
-            if (summaryData.data.activities && summaryData.data.activities.total > 0) {
-                html += '<div class="activity-section"><h3>Physical Activities</h3>';
-                html += '<ul class="activity-stats">';
-                if (summaryData.data.activities.gym.count > 0) {
-                    html += `<li>💪 Gym: ${summaryData.data.activities.gym.count} sessions</li>`;
-                }
-                if (summaryData.data.activities.sports.count > 0) {
-                    html += `<li>⚽ Sports: ${summaryData.data.activities.sports.count} sessions</li>`;
-                }
-                if (summaryData.data.activities.walk.count > 0) {
-                    html += `<li>🚶 Walk: ${summaryData.data.activities.walk.count} sessions</li>`;
-                }
-                if (summaryData.data.activities.run.count > 0) {
-                    html += `<li>🏃 Run: ${summaryData.data.activities.run.count} sessions</li>`;
-                }
-                html += `</ul><p class="activity-stat">Total: ${summaryData.data.activities.total} activities</p></div>`;
-            }
-            
-            // If no data available
-            if (!summaryData.data.events || summaryData.data.events.totalAttended === 0) {
-                if (!summaryData.data.activities || summaryData.data.activities.total === 0) {
-                    html += '<div class="no-data">No activity data available yet. Start logging your activities!</div>';
-                }
-            }
-            
-            html += '</div>';
-            contentDiv.innerHTML = html;
             console.log('✅ Activity data loaded and displayed');
         } else {
-            contentDiv.innerHTML = '<div class="no-data">No activity data available yet.</div>';
+            contentDiv.innerHTML = '<div class="no-data">No events available.</div>';
         }
     } catch (error) {
         console.error('❌ Activity API Error:', error);
         contentDiv.innerHTML = `<div class="error">Error loading activity data: ${error.message}</div>`;
     }
 }
+
+// Display events based on filter
+function displayEvents(events, summaryData) {
+    const contentDiv = document.getElementById('activity-content');
+    if (!contentDiv) return;
+    
+    // Get current filter
+    const activeFilter = document.querySelector('.filter-btn.active');
+    const filter = activeFilter ? activeFilter.dataset.filter : 'all';
+    
+    // Filter events
+    let filteredEvents = events;
+    if (filter === 'free') {
+        filteredEvents = events.filter(e => e.isFree === true);
+    } else if (filter === 'paid') {
+        filteredEvents = events.filter(e => e.isFree === false);
+    } else if (filter === 'my') {
+        filteredEvents = events.filter(e => e.isAttending === true);
+    }
+    
+    let html = '<div class="activity-dashboard">';
+    
+    // Campus Events Section
+    html += '<div class="events-section">';
+    html += `<h3 class="section-subtitle">Campus Events <span class="event-count">(${filteredEvents.length})</span></h3>`;
+    
+    if (filteredEvents.length > 0) {
+        html += '<div class="events-grid">';
+        filteredEvents.forEach(event => {
+            const eventDate = event.startTime ? new Date(event.startTime).toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+            }) : 'Date TBD';
+            const eventTime = event.startTime ? new Date(event.startTime).toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+            }) : '';
+            
+            const isAttending = event.isAttending || false;
+            const costDisplay = event.isFree ? '<span class="event-badge free">FREE</span>' : `<span class="event-badge paid">$${event.cost || '0'}</span>`;
+            const attendingBadge = isAttending ? '<span class="attending-badge">✓ Attending</span>' : '';
+            
+            html += `<div class="event-card ${isAttending ? 'attending' : ''}">
+                <div class="event-header">
+                    <h4 class="event-name">${event.name || 'Event'}</h4>
+                    ${costDisplay}
+                </div>
+                <div class="event-details">
+                    <div class="event-detail-item">
+                        <span class="event-icon">📅</span>
+                        <span>${eventDate} ${eventTime}</span>
+                    </div>
+                    ${event.location ? `<div class="event-detail-item">
+                        <span class="event-icon">📍</span>
+                        <span>${event.location}</span>
+                    </div>` : ''}
+                    ${event.category ? `<div class="event-detail-item">
+                        <span class="event-icon">🏷️</span>
+                        <span>${event.category}</span>
+                    </div>` : ''}
+                </div>
+                <div class="event-footer">
+                    ${attendingBadge}
+                    <button class="btn-attend ${isAttending ? 'btn-unattend' : 'btn-join'}" onclick="toggleAttendance('${event.eventId}', ${isAttending})">
+                        ${isAttending ? 'Cancel Attendance' : 'Mark Attending'}
+                    </button>
+                </div>
+            </div>`;
+        });
+        html += '</div>';
+    } else {
+        html += '<div class="no-events">No events found for this filter.</div>';
+    }
+    html += '</div>';
+    
+    // Activity Stats Section (My Activity Summary)
+    if (summaryData && summaryData.success) {
+        html += displayActivityStatsSection(summaryData);
+    }
+    
+    html += '</div>';
+    contentDiv.innerHTML = html;
+}
+
+// Display activity statistics
+function displayActivityStats(summaryData) {
+    // This is called from loadActivityData, stats are included in displayEvents
+}
+
+// Display activity stats section
+function displayActivityStatsSection(summaryData) {
+    let html = '<div class="activity-stats-section">';
+    html += '<h3 class="section-subtitle">My Activity Summary</h3>';
+    html += '<div class="stats-grid">';
+    
+    // Events Attended
+    const eventsAttended = summaryData.data?.events?.totalAttended || 0;
+    html += `<div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-content">
+            <div class="stat-value">${eventsAttended}</div>
+            <div class="stat-label">Events Attended</div>
+        </div>
+    </div>`;
+    
+    // Class Attendance
+    const classAttendance = summaryData.data?.classAttendance;
+    if (classAttendance) {
+        const percentage = classAttendance.percentage || 0;
+        html += `<div class="stat-card">
+            <div class="stat-icon">🎓</div>
+            <div class="stat-content">
+                <div class="stat-value">${percentage.toFixed(0)}%</div>
+                <div class="stat-label">Class Attendance</div>
+                <div class="stat-sublabel">${classAttendance.attendedDays || 0} / ${classAttendance.totalDays || 0} days</div>
+            </div>
+        </div>`;
+    }
+    
+    // Physical Activities
+    const activities = summaryData.data?.activities;
+    if (activities && activities.total > 0) {
+        html += `<div class="stat-card">
+            <div class="stat-icon">💪</div>
+            <div class="stat-content">
+                <div class="stat-value">${activities.total}</div>
+                <div class="stat-label">Physical Activities</div>
+                <div class="stat-sublabel">Gym: ${activities.gym?.count || 0} | Sports: ${activities.sports?.count || 0}</div>
+            </div>
+        </div>`;
+    }
+    
+    html += '</div></div>';
+    return html;
+}
+
+// Filter events
+function filterEvents(filter) {
+    // Update active button
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+    
+    // Re-display events with new filter
+    if (window.summaryData) {
+        displayEvents(allEvents, window.summaryData);
+    } else {
+        loadActivityData();
+    }
+}
+
+// Toggle event attendance
+async function toggleAttendance(eventId, currentlyAttending) {
+    try {
+        const userId = defaultUserId;
+        
+        if (currentlyAttending) {
+            // Remove attendance
+            const response = await fetch(`${API_BASE_URL}/activities/events/${eventId}/attend`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userId })
+            });
+            
+            if (response.ok) {
+                // Update the event in allEvents
+                const event = allEvents.find(e => e.eventId === eventId);
+                if (event) {
+                    event.isAttending = false;
+                }
+                // Reload to update display
+                loadActivityData();
+            }
+        } else {
+            // Add attendance
+            const response = await fetch(`${API_BASE_URL}/activities/events/${eventId}/attend`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userId })
+            });
+            
+            if (response.ok) {
+                // Update the event in allEvents
+                const event = allEvents.find(e => e.eventId === eventId);
+                if (event) {
+                    event.isAttending = true;
+                }
+                // Reload to update display
+                loadActivityData();
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling attendance:', error);
+        alert('Failed to update attendance. Please try again.');
+    }
+}
+
+// Initialize summaryData
+window.summaryData = null;
 
 // Rewards API Integration
 async function loadRewardsData() {

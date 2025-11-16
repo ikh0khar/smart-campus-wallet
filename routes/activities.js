@@ -13,7 +13,7 @@ const { updateStreak, awardEventPoints, awardActivityPoints } = require('../util
 router.get('/events', async (req, res) => {
   try {
     const { category, isFree, userId } = req.query;
-    
+
     // Build MongoDB query
     const query = {};
     if (category) {
@@ -114,10 +114,10 @@ router.get('/events/user/:userId', async (req, res) => {
     const attendedEvents = await Event.find({ eventId: { $in: attendedEventIds } }).lean();
 
     const formattedEvents = attendedEvents.map(event => ({
-      ...event,
-      isFree: event.cost === 0 || event.cost === '0',
-      isAttending: true,
-    }));
+        ...event,
+        isFree: event.cost === 0 || event.cost === '0',
+        isAttending: true,
+      }));
 
     res.json({
       success: true,
@@ -301,7 +301,7 @@ router.post('/class-attendance/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const { date } = req.body;
-    
+
     const dateStr = date || new Date().toISOString().split('T')[0];
 
     // Get or create class attendance

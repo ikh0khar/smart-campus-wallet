@@ -19,7 +19,7 @@ const normalizeCategory = (category) => {
 const calculateSpent = async (budget, transactions = null) => {
   const startDate = new Date(budget.startDate);
   const endDate = new Date(budget.endDate);
-  
+
   // Build query for transactions matching budget criteria
   const query = {
     date: {
@@ -51,15 +51,15 @@ const calculateSpent = async (budget, transactions = null) => {
 
   // Use provided transactions or query from database
   if (transactions) {
-    return transactions
-      .filter(t => {
-        const tDate = new Date(t.date);
-        const normalizedCategory = normalizeCategory(t.category);
-        return normalizedCategory === budget.category &&
-               tDate >= startDate &&
-               tDate <= endDate;
-      })
-      .reduce((sum, t) => sum + t.amount, 0);
+  return transactions
+    .filter(t => {
+      const tDate = new Date(t.date);
+      const normalizedCategory = normalizeCategory(t.category);
+      return normalizedCategory === budget.category &&
+             tDate >= startDate &&
+             tDate <= endDate;
+    })
+    .reduce((sum, t) => sum + t.amount, 0);
   }
 
   // Query from MongoDB
@@ -77,7 +77,7 @@ const calculateSpent = async (budget, transactions = null) => {
 router.get('/', async (req, res) => {
   try {
     const { isActive, userId } = req.query;
-    
+
     // Build query
     const query = {};
     if (isActive !== undefined) {
@@ -94,11 +94,11 @@ router.get('/', async (req, res) => {
     const budgetsWithProgress = await Promise.all(
       budgets.map(async (budget) => {
         const spent = await calculateSpent(budget);
-        const remaining = budget.amount - spent;
-        const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
-        const status = percentage >= 100 ? 'exceeded' : percentage >= 80 ? 'warning' : 'good';
+      const remaining = budget.amount - spent;
+      const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
+      const status = percentage >= 100 ? 'exceeded' : percentage >= 80 ? 'warning' : 'good';
 
-        return {
+      return {
           id: budget._id.toString(),
           userId: budget.userId,
           name: budget.name,
@@ -108,11 +108,11 @@ router.get('/', async (req, res) => {
           startDate: budget.startDate.toISOString().split('T')[0],
           endDate: budget.endDate.toISOString().split('T')[0],
           isActive: budget.isActive,
-          spent: parseFloat(spent.toFixed(2)),
-          remaining: parseFloat(remaining.toFixed(2)),
-          percentage: parseFloat(percentage.toFixed(2)),
-          status,
-        };
+        spent: parseFloat(spent.toFixed(2)),
+        remaining: parseFloat(remaining.toFixed(2)),
+        percentage: parseFloat(percentage.toFixed(2)),
+        status,
+      };
       })
     );
 

@@ -55,6 +55,15 @@
         <!-- Activity Section -->
         <section class="content-section">
             <h2 class="section-title">My Activity</h2>
+            
+            <!-- Filter Buttons -->
+            <div class="filter-container">
+                <button class="filter-btn active" data-filter="all" onclick="filterEvents('all')">All Events</button>
+                <button class="filter-btn" data-filter="free" onclick="filterEvents('free')">Free Only</button>
+                <button class="filter-btn" data-filter="paid" onclick="filterEvents('paid')">Paid Events</button>
+                <button class="filter-btn" data-filter="my" onclick="filterEvents('my')">My Events</button>
+            </div>
+
             <div id="activity-content" class="section-content">
                 <div class="loading">Loading activity data...</div>
             </div>
