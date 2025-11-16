@@ -142,6 +142,8 @@ async function loadBudgetingData() {
 // Global variables for activity page
 let allEvents = [];
 let defaultUserId = 'user123';
+let currentEventFilter = 'all';
+let currentCategoryFilter = 'all';
 
 // Activity API Integration
 async function loadActivityData() {
@@ -182,11 +184,17 @@ function displayEvents(events, summaryData) {
     const contentDiv = document.getElementById('activity-content');
     if (!contentDiv) return;
     
-    // Get current filter
-    const activeFilter = document.querySelector('.filter-btn.active');
-    const filter = activeFilter ? activeFilter.dataset.filter : 'all';
+    // Get current filters
+    const activeFilter = document.querySelector('.filter-btn[data-filter].active');
+    const activeCategory = document.querySelector('.category-btn.active');
+    const filter = activeFilter ? activeFilter.dataset.filter : currentEventFilter;
+    const category = activeCategory ? activeCategory.dataset.category : currentCategoryFilter;
     
-    // Filter events
+    // Store current filters
+    currentEventFilter = filter;
+    currentCategoryFilter = category;
+    
+    // Filter events by type (free/paid/my/all)
     let filteredEvents = events;
     if (filter === 'free') {
         filteredEvents = events.filter(e => e.isFree === true);
@@ -194,6 +202,11 @@ function displayEvents(events, summaryData) {
         filteredEvents = events.filter(e => e.isFree === false);
     } else if (filter === 'my') {
         filteredEvents = events.filter(e => e.isAttending === true);
+    }
+    
+    // Filter by category
+    if (category && category !== 'all') {
+        filteredEvents = filteredEvents.filter(e => e.category === category);
     }
     
     let html = '<div class="activity-dashboard">';
@@ -315,15 +328,37 @@ function displayActivityStatsSection(summaryData) {
     return html;
 }
 
-// Filter events
+// Filter events by type (all/free/paid/my)
 function filterEvents(filter) {
-    // Update active button
-    document.querySelectorAll('.filter-btn').forEach(btn => {
+    // Update active button (only for event type filters, not category)
+    document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+    const filterBtn = document.querySelector(`[data-filter="${filter}"]`);
+    if (filterBtn) {
+        filterBtn.classList.add('active');
+    }
     
     // Re-display events with new filter
+    if (window.summaryData) {
+        displayEvents(allEvents, window.summaryData);
+    } else {
+        loadActivityData();
+    }
+}
+
+// Filter events by category
+function filterByCategory(category) {
+    // Update active category button
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const categoryBtn = document.querySelector(`[data-category="${category}"]`);
+    if (categoryBtn) {
+        categoryBtn.classList.add('active');
+    }
+    
+    // Re-display events with new category filter
     if (window.summaryData) {
         displayEvents(allEvents, window.summaryData);
     } else {

@@ -1262,3 +1262,45 @@ body {
 body.menu-open {
     overflow: hidden !important;
 }
+
+/* Filter Row Styles */
+.filter-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.filter-row:last-child {
+    margin-bottom: 0;
+}
+
+.filter-label {
+    color: #ccc;
+    font-size: 14px;
+    font-weight: 600;
+    margin-right: 5px;
+    white-space: nowrap;
+}
+
+.category-filters {
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.category-btn {
+    font-size: 13px;
+    padding: 8px 16px;
+}
+
+.category-btn.active {
+    background: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.category-btn:hover {
+    background: rgba(76, 175, 80, 0.3);
+    border-color: rgba(76, 175, 80, 0.5);
+}
