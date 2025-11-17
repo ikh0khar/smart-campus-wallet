@@ -3,9 +3,9 @@
     {
       "userId": "U001",
       "_id": "user_U001",
-      "balance": -26.72,
+      "balance": -41.72,
       "createdAt": "2025-11-16T08:26:34.133Z",
-      "updatedAt": "2025-11-16T16:04:58.373Z"
+      "updatedAt": "2025-11-16T19:40:28.976Z"
     },
     {
       "userId": "U002",
@@ -630,6 +630,19 @@
       "_id": "id_1763309098373_4kvvn5trv",
       "createdAt": "2025-11-16T16:04:58.373Z",
       "updatedAt": "2025-11-16T16:04:58.373Z"
+    },
+    {
+      "transactionId": "TXN1763322028972X9893",
+      "userId": "U001",
+      "merchant": "starbucks",
+      "category": "food",
+      "amount": 15,
+      "paymentMethod": "Cash",
+      "location": "PRCC",
+      "date": "2025-11-16T00:00:00.000Z",
+      "_id": "id_1763322028976_86ximwjes",
+      "createdAt": "2025-11-16T19:40:28.976Z",
+      "updatedAt": "2025-11-16T19:40:28.976Z"
     }
   ],
   "budgets": [],
@@ -1130,14 +1143,6 @@
     },
     {
       "userId": "U001",
-      "eventId": "E011",
-      "attendedAt": "2025-11-16T15:57:38.004Z",
-      "_id": "id_1763308658004_i7e3w7n8k",
-      "createdAt": "2025-11-16T15:57:38.004Z",
-      "updatedAt": "2025-11-16T15:57:38.004Z"
-    },
-    {
-      "userId": "U001",
       "eventId": "E019",
       "attendedAt": "2025-11-16T15:57:40.387Z",
       "_id": "id_1763308660387_unqenrphy",
@@ -1151,6 +1156,14 @@
       "_id": "id_1763309154621_6wu1bf3rd",
       "createdAt": "2025-11-16T16:05:54.621Z",
       "updatedAt": "2025-11-16T16:05:54.621Z"
+    },
+    {
+      "userId": "U001",
+      "eventId": "E011",
+      "attendedAt": "2025-11-16T17:39:51.797Z",
+      "_id": "id_1763314791797_l61o8y6ex",
+      "createdAt": "2025-11-16T17:39:51.797Z",
+      "updatedAt": "2025-11-16T17:39:51.797Z"
     }
   ],
   "classAttendances": [
@@ -1609,6 +1622,14 @@
       "_id": "id_1763309167469_rcmikzmrl",
       "createdAt": "2025-11-16T16:06:07.469Z",
       "updatedAt": "2025-11-16T16:06:07.469Z"
+    },
+    {
+      "userId": "U001",
+      "activityType": "gym",
+      "date": "2025-11-16",
+      "_id": "id_1763322107669_hfpj03a9z",
+      "createdAt": "2025-11-16T19:41:47.669Z",
+      "updatedAt": "2025-11-16T19:41:47.669Z"
     }
   ],
   "rewardPoints": [
@@ -1622,7 +1643,7 @@
     {
       "userId": "U001",
       "totalPoints": 1650,
-      "updatedAt": "2025-11-16T16:05:59.582Z",
+      "updatedAt": "2025-11-16T17:39:51.800Z",
       "_id": "id_1763282093786_oenkcenqk",
       "createdAt": "2025-11-16T08:34:53.786Z"
     }
@@ -1646,7 +1667,7 @@
       "lastDate": "2025-11-16",
       "_id": "id_1763282093785_498fjca8s",
       "createdAt": "2025-11-16T08:34:53.785Z",
-      "updatedAt": "2025-11-16T16:06:14.798Z"
+      "updatedAt": "2025-11-16T19:41:37.769Z"
     },
     {
       "userId": "U001",
@@ -1656,7 +1677,7 @@
       "lastDate": "2025-11-16",
       "_id": "id_1763283121793_ta9i0t09i",
       "createdAt": "2025-11-16T08:52:01.793Z",
-      "updatedAt": "2025-11-16T16:05:55.089Z"
+      "updatedAt": "2025-11-16T17:39:51.798Z"
     },
     {
       "userId": "U001",
@@ -1666,7 +1687,7 @@
       "lastDate": "2025-11-16",
       "_id": "id_1763284410939_gez97iivv",
       "createdAt": "2025-11-16T09:13:30.939Z",
-      "updatedAt": "2025-11-16T16:06:07.470Z"
+      "updatedAt": "2025-11-16T19:41:47.669Z"
     }
   ],
   "achievements": [
@@ -1744,15 +1765,6 @@
     },
     {
       "userId": "U001",
-      "achievementId": "FREE_EVENT_E011",
-      "pointsEarned": 150,
-      "earnedAt": "2025-11-16T15:57:38.005Z",
-      "_id": "id_1763308658005_ukjcnwr6d",
-      "createdAt": "2025-11-16T15:57:38.005Z",
-      "updatedAt": "2025-11-16T15:57:38.005Z"
-    },
-    {
-      "userId": "U001",
       "achievementId": "FREE_EVENT_E019",
       "pointsEarned": 150,
       "earnedAt": "2025-11-16T15:57:40.389Z",
@@ -1768,21 +1780,30 @@
       "_id": "id_1763309154622_7nedhx88l",
       "createdAt": "2025-11-16T16:05:54.622Z",
       "updatedAt": "2025-11-16T16:05:54.622Z"
+    },
+    {
+      "userId": "U001",
+      "achievementId": "FREE_EVENT_E011",
+      "pointsEarned": 150,
+      "earnedAt": "2025-11-16T17:39:51.799Z",
+      "_id": "id_1763314791799_21dgbmt3f",
+      "createdAt": "2025-11-16T17:39:51.799Z",
+      "updatedAt": "2025-11-16T17:39:51.799Z"
     }
   ],
   "_meta": {
     "createdAt": "2025-11-16T07:28:48.253Z",
-    "lastModified": "2025-11-16T16:06:14.798Z"
+    "lastModified": "2025-11-16T19:41:47.669Z"
   },
   "mealPlans": [
     {
       "_id": "mealplan_1763303976526_g9qdz3ol7",
       "userId": "U001",
       "totalSwipes": 220,
-      "remainingSwipes": 181,
-      "usedSwipes": 39,
+      "remainingSwipes": 180,
+      "usedSwipes": 40,
       "createdAt": "2025-11-16T14:39:36.526Z",
-      "updatedAt": "2025-11-16T16:04:38.744Z"
+      "updatedAt": "2025-11-16T19:38:45.206Z"
     }
   ]
 }
